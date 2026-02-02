@@ -1,0 +1,239 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Elmlog</title>
+    <meta name='wot-verification' content='5cb29ec02479d36e6dbc' />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Elmlog" />
+    <meta property="og:description" content="Elmlog" />
+    <meta property="og:url" content="https://elmlog.org/" />
+    <meta property="og:site_name" content="Elmlog" />
+    <meta property="og:image" content="https://elmlog.org/images/elmlog-360x360.png"/>
+    <meta property="og:image:width" content="360" />
+    <meta property="og:image:height" content="360" />
+    <link rel='stylesheet' href='css/icon-font.css' >
+    <link rel='stylesheet' href='css/material.indigo-light_blue.min.css' >
+    <link rel='stylesheet' href='css/fontello.css' >
+    <link rel='stylesheet' href='css/global.css' >
+    <link href='/images/icon-180.png' rel='apple-touch-icon' sizes='180x180' >
+    <link rel="manifest" href="manifest.webmanifest" >
+    <script type='text/javascript' src='js/PortFunnel.js'></script>
+    <script type='text/javascript' src='js/PortFunnel/LocalStorage.js'></script>
+    <script type='text/javascript' src='js/PortFunnel/WebSocket.js'></script>
+    <script type='text/javascript' src='js/write-clipboard.js'></script>
+    <script type='text/javascript' src='js/body-colors.js'></script>
+    <script type='text/javascript' src='js/watch-color-scheme.js'></script>
+    <script type='text/javascript' src='js/render-notify.js'></script>
+    <script type='text/javascript' src='js/idleNotify.js'></script>
+    <script type='text/javascript' src='js/text-area-tracker.js'></script>
+    <script type='text/javascript' src='worker.js'></script>
+    <script type='text/javascript' src='elm.js'></script>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  </head>
+  <body style='width: 40em; margin: auto; margin-top: 2em;'>
+    <noscript>
+      <h2 style='text-align: center;'>Mammudeck</h2>
+      <p>Elmlog is a webapp to help maintaining a weblog.</p>
+      <p style='font-color: red;'>
+        <b>Elmlog requires JavaScript to function. Without JavaScript,
+          this page is all you'll ever see.</b>
+      </p>
+      <p style='text-align: center;'>
+        <img src='images/elmlog.jpg' width='360' height='360' alt='Elmlog'/>
+      </p>
+      <p style='text-align: center;'>
+        <a href='https://github.com/billstclair/elmlog'>GitHub</a>
+      </p>
+      <p style='text-align: center;'>
+        <a rel='me' href='https://impeccable.social/billstclair'></a>
+        <a rel='me' href='https://gleasonator.com/@billstclair'></a>
+        <a rel='me' href='https://gab.com/billstclair'></a>
+        <a rel='me' href='https://mastodon.online/@mammudeck'></a>
+	<!--<a rel="me" href="https://social.quodverum.com/@mammudeck"></a>-->
+      </p>
+    </noscript>
+    <script type='text/javascript'>
+      // It's an application, so it doesn't need a div.
+      if (typeof Elm !== 'undefined') {
+        var elm = Elm;
+        if (!elm) {
+          console.log("elm.js has not been compiled from Main.elm.");
+        } else {
+          var app = elm['Main'];
+          if (!app) {
+            console.log("elm.js has not been compiled from Main.elm.");
+          } else {
+            app = app.init({ flags: true });
+            PortFunnel.subscribe(app);
+            var openWindow = app.ports && app.ports.openWindow;
+            if (openWindow) {
+              openWindow.subscribe(function(url) {
+                window.open(url, '_blank');
+              });
+            }
+            var boundingBoxRequest = app.ports.boundingBoxRequest;
+            if (boundingBoxRequest) {
+              var boundingBoxNotify = app.ports.boundingBoxNotify;
+              if (boundingBoxNotify) {
+                boundingBoxRequest.subscribe(function(id) {
+                  function getBB() {
+                    var element = document.getElementById(id);
+                    if (element) {
+                      var bb = element.getBoundingClientRect();
+                      var bbres =
+                          { bottom: Math.round(bb.bottom),
+                            height: Math.round(bb.height),
+                            left: Math.round(bb.left),
+                            right: Math.round(bb.right),
+                            top: Math.round(bb.top),
+                            width: Math.round(bb.width),
+                            x: Math.round(bb.x),
+                            y: Math.round(bb.y)
+                          };
+                      boundingBoxNotify.send(bbres)
+                    }
+                  };
+                  // Give it time to render.
+                  window.setTimeout(getBB, 200);
+                });
+              }
+            }
+          }
+        }
+      }
+          
+      // Stop all videos with a given id from playing.
+      var stopVideos = app && app.ports && app.ports.stopVideos;
+      if (stopVideos) {
+          stopVideos.subscribe(function() {
+              var videos = document.querySelectorAll("video");
+              for (var i=0; i<videos.length; i++) {
+                  var v = videos[i];
+                  var pause = v.pause;
+                  if (pause && v.id) {
+                      v.pause();
+                  }
+              }
+          });
+      }
+
+      // Reset a `select` option to the `selected` option
+      var resetSelectOption = app && app.ports && app.ports.resetSelectOption;
+      if (resetSelectOption) {
+          resetSelectOption.subscribe(function(id) {
+              var select = document.getElementById(id);
+              if (select) {
+                  var selected = select[0];
+                  if (selected) {
+                      select.value = selected.value;
+                  }
+              }
+          });
+      }
+              
+
+      // Idle time
+      if (app && app.ports) {
+        idleNotify(app.ports.idleNotify);
+      }
+
+      // Focus monitoring
+      var focusNotify = app && app.ports && app.ports.focusNotify;
+      if (focusNotify) {
+        window.addEventListener('focus', function() { focusNotify.send(true); });
+        window.addEventListener('blur', function() { focusNotify.send(false); });
+      }
+
+      // https://plainjs.com/javascript/events/trigger-an-event-11/
+      function triggerEvent(el, type) {
+        if ('createEvent' in document) {
+          // modern browsers, IE9+
+          var e = document.createEvent('HTMLEvents');
+          e.initEvent(type, false, true);
+          el.dispatchEvent(e);
+        } else {
+          // IE 8
+          var e = document.createEventObject();
+          e.eventType = type;
+          el.fireEvent('on'+e.eventType, e);
+        }
+      }
+
+      // https://stackoverflow.com/questions/31040611/manually-trigger-focus-on-input-iphone-issue
+      var mobileFocus = app && app.ports && app.ports.mobileFocus;
+      if (mobileFocus) {
+        mobileFocus.subscribe(function(id) {
+          try {
+            var node = document.getElementById(id);
+            if (node) {
+              var listener = function() {
+                node.focus();
+              };
+              node.addEventListener('touchstart', listener)
+              var remove = function() {
+                node.removeEventListener('touchstart', listener);
+              };
+              window.setTimeout(remove, 100);
+              triggerEvent(node, 'touchstart');
+            }
+          } catch (e) {}
+        });
+      }
+      
+      // Scroll monitoring
+      // https://developer.mozilla.org/en-US/docs/Web/API/Document/scroll_event
+      //
+      // Requests from Elm: {id: <string>, enable: <bool>}
+      // Notifications to Elm: {id: <string>, scrollLeft: <int>, scrollTop: <int>}
+      var scrollNotify = app && app.ports && app.ports.scrollNotify;
+      var scrollRequest = app && app.ports && app.ports.scrollRequest;
+      // {id: {node: <node>, listener: <function>, ticking: <bool>}, ...}
+      var listeners = {};
+      if (scrollNotify && scrollRequest) {
+        scrollRequest.subscribe(function(request) {
+          //console.log("scrollRequest: ", request);
+          var id = request.id;
+          var enable = request.enable;
+          if (id) {
+            var o = listeners[id];
+            if (o) {
+              var node = o.node;
+              var listener = o.listener;
+              node.removeEventListener('scroll', listener);
+              delete listeners[id];
+            }
+            if (enable) {
+              var node = document.getElementById(id);
+              if (node) {
+                var o = {node: node}
+                var listener = function() {
+                  if (!o.ticking) {
+                    o.ticking = true;
+                    window.requestAnimationFrame(function() {
+                      var notification = {id: id,
+                                          scrollLeft: node.scrollLeft,
+                                          scrollTop: node.scrollTop,
+                                          scrollWidth : node.scrollWidth,
+                                          scrollHeight : node.scrollHeight,
+                                          clientWidth : node.clientWidth,
+                                          clientHeight : node.clientHeight
+                                         }
+                      scrollNotify.send(notification);
+                      //console.log('scrollNotify: ', notification);
+                      o.ticking = false;
+                    });
+                  }
+                }
+                o.listener = listener;
+                listeners[id] = o;
+                node.addEventListener('scroll', listener);
+              }
+            }
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
