@@ -34,7 +34,7 @@
   </head>
   <body style='width: 40em; margin: auto; margin-top: 2em;'>
     <noscript>
-      <h2 style='text-align: center;'>Mammudeck</h2>
+      <h2 style='text-align: center;'>Elmlog</h2>
       <p>Elmlog is a webapp to help maintaining a weblog.</p>
       <p style='font-color: red;'>
         <b>Elmlog requires JavaScript to function. Without JavaScript,
@@ -59,11 +59,11 @@
       if (typeof Elm !== 'undefined') {
         var elm = Elm;
         if (!elm) {
-          console.log("elm.js has not been compiled from Main.elm.");
+          console.log("elm.js does not define the symbol 'Elm'.");
         } else {
           var app = elm['Main'];
           if (!app) {
-            console.log("elm.js has not been compiled from Main.elm.");
+            console.log("Elm.Main.app is not defined.");
           } else {
             app = app.init({ flags: true });
             PortFunnel.subscribe(app);

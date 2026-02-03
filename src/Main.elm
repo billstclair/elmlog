@@ -1,0 +1,80 @@
+---------------------------------------------------------------
+--
+-- Main.elm
+-- Weblog, a website to help maintain a weblog.
+-- Copyright (c) 2026 Bill St. Clair <billstclair@gmail.com>
+-- Some rights reserved.
+-- Distributed under the MIT License
+-- See LICENSE
+--
+----------------------------------------------------------------------
+
+
+module Main exposing (main)
+
+{-| Weblog.org top-level
+
+Weblog is a template wrapper that helps in creating a weblog.
+A weblog is a frequently updated web site, usually organized by date.
+It is the precursor to today's social media, without the barriers.
+
+-}
+
+import Browser exposing (Document, UrlRequest(..))
+import Browser.Dom as Dom exposing (Viewport)
+import Browser.Events as Events
+import Browser.Navigation as Navigation exposing (Key)
+import Cmd.Extra exposing (addCmd, withCmd, withCmds, withNoCmd)
+import Html exposing (Html, div, text)
+import Html.Events exposing (onClick)
+import Json.Decode as JD exposing (Decoder)
+import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
+import Json.Encode as JE exposing (Value)
+import Url exposing (Url)
+
+
+main =
+    Browser.application
+        { init = init
+        , view = view
+        , update = update
+        , onUrlRequest = OnUrlRequest
+        , onUrlChange = OnUrlChange
+        }
+
+
+type alias Model =
+    { url : Url
+    , key : Key
+    }
+
+
+type Cmd Msg
+    = Noop
+
+
+type Msg
+    = OnUrlRequest UrlRequest
+    | OnUrlChange Url
+
+
+init : Value -> Url -> Key -> ( Model, Cmd Msg )
+init flags url key =
+    { url = url
+    , key = key
+    }
+    <|
+        withNoCmd
+
+
+view : Model -> Document Msg
+view model =
+    { title = "Elmlog"
+    , body =
+        text "Hello, World!"
+    }
+
+
+update : Msg -> Model -> Model
+update msg model =
+    model
