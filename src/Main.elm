@@ -25,7 +25,8 @@ import Browser.Dom as Dom exposing (Viewport)
 import Browser.Events as Events
 import Browser.Navigation as Navigation exposing (Key)
 import Cmd.Extra exposing (addCmd, withCmd, withCmds, withNoCmd)
-import Html exposing (Html, div, text)
+import Html exposing (Html, a, div, text)
+import Html.Attributes exposing (href)
 import Html.Events exposing (onClick)
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
@@ -73,7 +74,8 @@ view model =
     { title = "Elmlog"
     , body =
         [ h2 "Elmlog"
-        , text "Hello, World!"
+        , a [ href "https://github.com/billstclair/elmlog" ]
+            [ text "GitHub" ]
         ]
     }
 
