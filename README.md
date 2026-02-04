@@ -9,7 +9,7 @@
      cd .../elmlog/site
      elm reactor
      
-Then developmente becomes:
+Then development becomes:
 
      1. Change source .elm files
      2. bin/build
