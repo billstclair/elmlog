@@ -82,4 +82,18 @@ view model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    model |> withNoCmd
+    case msg of
+        OnUrlRequest request ->
+            case request of
+                Internal url ->
+                    ( model
+                    , Navigation.pushUrl model.key (Url.toString url)
+                    )
+
+                External string ->
+                    ( model
+                    , Navigation.load string
+                    )
+
+        _ ->
+            model |> withNoCmd
