@@ -36,10 +36,11 @@ import Url exposing (Url)
 main =
     Browser.application
         { init = init
-        , view = view
-        , update = update
         , onUrlRequest = OnUrlRequest
         , onUrlChange = OnUrlChange
+        , subscriptions = \model -> Sub.none
+        , update = update
+        , view = view
         }
 
 
@@ -47,10 +48,6 @@ type alias Model =
     { url : Url
     , key : Key
     }
-
-
-type Cmd Msg
-    = Noop
 
 
 type Msg
@@ -63,18 +60,24 @@ init flags url key =
     { url = url
     , key = key
     }
-    <|
-        withNoCmd
+        |> withNoCmd
 
 
-view : Model -> Document Msg
+h2 : String -> Html msg
+h2 string =
+    Html.h2 [] [ text string ]
+
+
+view : Model -> Document msg
 view model =
     { title = "Elmlog"
     , body =
-        text "Hello, World!"
+        [ h2 "Elmlog"
+        , text "Hello, World!"
+        ]
     }
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    model
+    model |> withNoCmd
