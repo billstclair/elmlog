@@ -26,8 +26,8 @@ import Browser.Events as Events
 import Browser.Navigation as Navigation exposing (Key)
 import Cmd.Extra exposing (addCmd, withCmd, withCmds, withNoCmd)
 import Elmlog.Types exposing (Message(..), MessageType(..), messageText)
-import Html exposing (Html, a, div, p, text, textarea)
-import Html.Attributes exposing (href, style)
+import Html exposing (Html, a, div, img, p, text, textarea)
+import Html.Attributes exposing (href, src, style)
 import Html.Events exposing (onClick, onInput)
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
@@ -64,11 +64,15 @@ type Msg
 
 init : Value -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
+    let
+        message =
+            MarkdownMessage "Hello, World.\n\n[billstclair.com](https://billstclair.com)"
+    in
     { url = url
     , key = key
     , messageType = MarkdownType
-    , message = MarkdownMessage ""
-    , preview = text ""
+    , message = message
+    , preview = toHtml message
     }
         |> withNoCmd
 
@@ -92,13 +96,17 @@ view model =
                     [ style "width" "50em"
                     , style "height" "20em"
                     ]
-                    [ toHtml model.message ]
+                    [ text <| messageText model.message ]
                 ]
             , p []
                 [ model.preview ]
             , p []
                 [ a [ href "https://github.com/billstclair/elmlog" ]
-                    [ text "GitHub" ]
+                    [ img
+                        [ src "images/GitHub-Mark-32px.png"
+                        ]
+                        []
+                    ]
                 ]
             ]
         ]
