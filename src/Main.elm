@@ -25,12 +25,14 @@ import Browser.Dom as Dom exposing (Viewport)
 import Browser.Events as Events
 import Browser.Navigation as Navigation exposing (Key)
 import Cmd.Extra exposing (addCmd, withCmd, withCmds, withNoCmd)
+import Elmlog.Types exposing (Message(..), MessageType(..))
 import Html exposing (Html, a, div, text)
 import Html.Attributes exposing (href)
 import Html.Events exposing (onClick)
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
 import Json.Encode as JE exposing (Value)
+import Markdown exposing (toHtml)
 import Url exposing (Url)
 
 
@@ -95,5 +97,32 @@ update msg model =
                     , Navigation.load string
                     )
 
-        _ ->
-            model |> withNoCmd
+        OnUrlChange url ->
+            ( model
+            , Navigation.pushUrl model.key (Url.toString url)
+            )
+
+
+toHtml : Message -> Html msg
+toHtml message =
+    case message of
+        TextMessage string ->
+            text string
+
+        FilteredHtmlMessage string ->
+            parseHtml string Filtered
+
+        PlainHtmlMessage string ->
+            parseHtml string Plain
+
+        RawHtmlMessage string ->
+            parseHtml string Raw
+
+        MarkdownMessage string ->
+            Markdown.toHtml [] string
+
+
+parseHtml : String -> MessageType -> Html msg
+parseHtml string messageType =
+    -- TODO
+    text string
