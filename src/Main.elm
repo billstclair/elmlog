@@ -66,7 +66,7 @@ init : Value -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         message =
-            MarkdownMessage "Hello, World.\n\n[billstclair.com](https://billstclair.com)"
+            MarkdownMessage "Hello, World.\n\n**bold text.** _Italic text._ **_both._**\n\n[billstclair.com](https://billstclair.com/)\n\n![Mastodon](https://mammudeck.com/images/icon-192.png)"
     in
     { url = url
     , key = key
@@ -82,13 +82,23 @@ h2 string =
     Html.h2 [] [ text string ]
 
 
+h4 : String -> Html Msg
+h4 string =
+    Html.h3 [] [ text string ]
+
+
 view : Model -> Document Msg
 view model =
     { title = "Elmlog"
     , body =
         [ h2 "Elmlog"
-        , div [ style "margin" "10px" ]
-            [ p
+        , div
+            [ style "margin" "10px"
+            , style "overflow" "auto"
+            , style "height" "90%"
+            ]
+            [ h4 "Content"
+            , p
                 [ style "margin" "10px"
                 , onInput InputTextArea
                 ]
@@ -98,6 +108,7 @@ view model =
                     ]
                     [ text <| messageText model.message ]
                 ]
+            , h4 "Preview"
             , p []
                 [ model.preview ]
             , p []
