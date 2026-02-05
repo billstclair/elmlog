@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------
 
 
-module Elmlog.Types exposing (Message(..), MessageType(..))
+module Elmlog.Types exposing (Message(..), MessageType(..), messageText)
 
 {-| Elmlog types.
 -}
@@ -26,9 +26,29 @@ type Message
     | MarkdownMessage String
 
 
+messageText : Message -> String
+messageText message =
+    case message of
+        TextMessage string ->
+            string
+
+        FilteredHtmlMessage string ->
+            string
+
+        PlainHtmlMessage string ->
+            string
+
+        RawHtmlMessage string ->
+            string
+
+        MarkdownMessage string ->
+            string
+
+
 {-| Message type.
 -}
 type MessageType
-    = Filtered
-    | Plain
-    | Raw
+    = FilteredType
+    | PlainType
+    | RawType
+    | MarkdownType

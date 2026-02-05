@@ -25,10 +25,10 @@ import Browser.Dom as Dom exposing (Viewport)
 import Browser.Events as Events
 import Browser.Navigation as Navigation exposing (Key)
 import Cmd.Extra exposing (addCmd, withCmd, withCmds, withNoCmd)
-import Elmlog.Types exposing (Message(..), MessageType(..))
-import Html exposing (Html, a, div, text)
-import Html.Attributes exposing (href)
-import Html.Events exposing (onClick)
+import Elmlog.Types exposing (Message(..), MessageType(..), messageText)
+import Html exposing (Html, a, div, p, text, textarea)
+import Html.Attributes exposing (href, style)
+import Html.Events exposing (onClick, onInput)
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
 import Json.Encode as JE exposing (Value)
@@ -50,34 +50,57 @@ main =
 type alias Model =
     { url : Url
     , key : Key
+    , messageType : MessageType
+    , message : Message
+    , preview : Html Msg
     }
 
 
 type Msg
     = OnUrlRequest UrlRequest
     | OnUrlChange Url
+    | InputTextArea String
 
 
 init : Value -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
     { url = url
     , key = key
+    , messageType = MarkdownType
+    , message = MarkdownMessage ""
+    , preview = text ""
     }
         |> withNoCmd
 
 
-h2 : String -> Html msg
+h2 : String -> Html Msg
 h2 string =
     Html.h2 [] [ text string ]
 
 
-view : Model -> Document msg
+view : Model -> Document Msg
 view model =
     { title = "Elmlog"
     , body =
         [ h2 "Elmlog"
-        , a [ href "https://github.com/billstclair/elmlog" ]
-            [ text "GitHub" ]
+        , div [ style "margin" "10px" ]
+            [ p
+                [ style "margin" "10px"
+                , onInput InputTextArea
+                ]
+                [ textarea
+                    [ style "width" "50em"
+                    , style "height" "20em"
+                    ]
+                    [ toHtml model.message ]
+                ]
+            , p []
+                [ model.preview ]
+            , p []
+                [ a [ href "https://github.com/billstclair/elmlog" ]
+                    [ text "GitHub" ]
+                ]
+            ]
         ]
     }
 
@@ -85,6 +108,17 @@ view model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        InputTextArea string ->
+            let
+                message =
+                    MarkdownMessage string
+            in
+            { model
+                | message = message
+                , preview = toHtml message
+            }
+                |> withNoCmd
+
         OnUrlRequest request ->
             case request of
                 Internal url ->
@@ -103,26 +137,26 @@ update msg model =
             )
 
 
-toHtml : Message -> Html msg
+toHtml : Message -> Html Msg
 toHtml message =
     case message of
         TextMessage string ->
             text string
 
         FilteredHtmlMessage string ->
-            parseHtml string Filtered
+            parseHtml string FilteredType
 
         PlainHtmlMessage string ->
-            parseHtml string Plain
+            parseHtml string PlainType
 
         RawHtmlMessage string ->
-            parseHtml string Raw
+            parseHtml string RawType
 
         MarkdownMessage string ->
             Markdown.toHtml [] string
 
 
-parseHtml : String -> MessageType -> Html msg
+parseHtml : String -> MessageType -> Html Msg
 parseHtml string messageType =
     -- TODO
     text string
