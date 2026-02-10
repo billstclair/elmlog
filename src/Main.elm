@@ -32,7 +32,7 @@ import Html.Events exposing (onCheck, onClick, onInput)
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
 import Json.Encode as JE exposing (Value)
-import Markdown exposing (toHtml)
+import Markdown
 import Url exposing (Url)
 
 
@@ -106,9 +106,9 @@ view model =
                 ]
                 [ textarea
                     [ style "width" "50em"
-                    , style "height" "20em"
+                    , style "height" "10em"
                     ]
-                    [ text <| model.userText ]
+                    [ text model.userText ]
                 , fieldset []
                     [ radioButton
                         { buttonValue = MarkdownInput
@@ -223,6 +223,13 @@ update msg model =
             }
                 |> withNoCmd
 
+        SetInputType inputType ->
+            { model
+                | inputType = inputType
+                , preview = toHtml model.userText inputType
+            }
+                |> withNoCmd
+
         OnUrlRequest request ->
             case request of
                 Internal url ->
@@ -239,9 +246,6 @@ update msg model =
             ( model
             , Navigation.pushUrl model.key (Url.toString url)
             )
-
-        SetInputType inputType ->
-            { model | inputType = inputType } |> withNoCmd
 
 
 toHtml : String -> InputType -> Html Msg
@@ -263,4 +267,4 @@ toHtml string inputType =
 parseHtml : String -> InputType -> Html Msg
 parseHtml string messageType =
     -- TODO
-    text string
+    text <| Debug.log "parseHtml" string
