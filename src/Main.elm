@@ -89,6 +89,11 @@ h4 string =
     Html.h3 [] [ text string ]
 
 
+inputTypeRadioName : String
+inputTypeRadioName =
+    "inputTypeRadioName"
+
+
 view : Model -> Document Msg
 view model =
     { title = "Elmlog"
@@ -107,22 +112,23 @@ view model =
                 [ textarea
                     [ style "width" "50em"
                     , style "height" "10em"
+                    , value model.userText
                     ]
                     [ text model.userText ]
                 , fieldset []
                     [ radioButton
                         { buttonValue = MarkdownInput
                         , radioValue = model.inputType
-                        , radioName = "input-type"
-                        , setter = SetInputType MarkdownInput
+                        , radioName = inputTypeRadioName
+                        , setter = SetInputType
                         , label = "Markdown"
                         }
                     , br
                     , radioButton
                         { buttonValue = FilteredHtmlInput
                         , radioValue = model.inputType
-                        , radioName = "input-type"
-                        , setter = SetInputType FilteredHtmlInput
+                        , radioName = inputTypeRadioName
+                        , setter = SetInputType
                         , label = "Filtered Html"
                         }
                     , bullets
@@ -133,8 +139,8 @@ view model =
                     , radioButton
                         { buttonValue = FullHtmlInput
                         , radioValue = model.inputType
-                        , radioName = "input-type"
-                        , setter = SetInputType FullHtmlInput
+                        , radioName = inputTypeRadioName
+                        , setter = SetInputType
                         , label = "Full HTML"
                         }
                     , bullets
@@ -144,8 +150,8 @@ view model =
                     , radioButton
                         { buttonValue = RawHtmlInput
                         , radioValue = model.inputType
-                        , radioName = "input-type"
-                        , setter = SetInputType RawHtmlInput
+                        , radioName = inputTypeRadioName
+                        , setter = SetInputType
                         , label = "Raw HTML"
                         }
                     ]
@@ -185,7 +191,7 @@ br =
     Html.br [] []
 
 
-radioButton : { buttonValue : a, radioValue : a, radioName : String, setter : Msg, label : String } -> Html Msg
+radioButton : { buttonValue : a, radioValue : a, radioName : String, setter : a -> Msg, label : String } -> Html Msg
 radioButton { buttonValue, radioValue, radioName, setter, label } =
     span []
         [ input
@@ -195,15 +201,11 @@ radioButton { buttonValue, radioValue, radioName, setter, label } =
             , checked <| buttonValue == radioValue
             , onCheck <|
                 \checked ->
-                    if checked then
-                        setter
-
-                    else
-                        Noop
+                    setter radioValue
             ]
             []
         , span
-            [ onClick setter
+            [ onClick <| setter radioValue
             , style "cursor" "default"
             ]
             [ text label ]
@@ -224,11 +226,14 @@ update msg model =
                 |> withNoCmd
 
         SetInputType inputType ->
-            { model
-                | inputType = inputType
-                , preview = toHtml model.userText inputType
-            }
-                |> withNoCmd
+            ( Debug.log
+                ("SetInputType \"" ++ Debug.toString inputType ++ "\", model")
+                { model
+                    | inputType = inputType
+                    , preview = toHtml model.userText inputType
+                }
+            , Cmd.none
+            )
 
         OnUrlRequest request ->
             case request of
