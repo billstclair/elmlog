@@ -26,7 +26,7 @@ import Browser.Events as Events
 import Browser.Navigation as Navigation exposing (Key)
 import Cmd.Extra exposing (addCmd, withCmd, withCmds, withNoCmd)
 import Elmlog.Types exposing (InputType(..))
-import Html exposing (Html, a, div, fieldset, img, input, p, span, text, textarea)
+import Html exposing (Html, a, div, fieldset, img, input, p, span, text, textarea, ul)
 import Html.Attributes exposing (checked, href, name, src, style, type_, value)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Json.Decode as JD exposing (Decoder)
@@ -125,7 +125,11 @@ view model =
                         , setter = SetInputType FilteredHtmlInput
                         , label = "Filtered Html"
                         }
-                    , br
+                    , bullets
+                        [ li "convert line and paragraph breaks to <br> & <p>"
+                        , li "convert URLs and email address to links"
+                        , li "allowed HTML tags: <a> <em> <strong> <cite> <code> <ul> <ol> <li> <dl> <dt> <dd> <i> <b> <u> <blockquote> <pre>"
+                        ]
                     , radioButton
                         { buttonValue = FullHtmlInput
                         , radioValue = model.inputType
@@ -133,7 +137,10 @@ view model =
                         , setter = SetInputType FullHtmlInput
                         , label = "Full HTML"
                         }
-                    , br
+                    , bullets
+                        [ li "convert line and paragraph breaks to <br> & <p>"
+                        , li "convert URLs and email address to links"
+                        ]
                     , radioButton
                         { buttonValue = RawHtmlInput
                         , radioValue = model.inputType
@@ -157,6 +164,20 @@ view model =
             ]
         ]
     }
+
+
+bullets : List (Html msg) -> Html msg
+bullets elements =
+    Html.ul
+        [ style "margin-top" "0"
+        , style "margin-bottom" "0"
+        ]
+        elements
+
+
+li : String -> Html msg
+li string =
+    Html.li [] [ text string ]
 
 
 br : Html msg
