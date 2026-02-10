@@ -27,7 +27,7 @@ import Browser.Navigation as Navigation exposing (Key)
 import Cmd.Extra exposing (addCmd, withCmd, withCmds, withNoCmd)
 import Elmlog.Types exposing (InputType(..))
 import Html exposing (Html, a, div, fieldset, img, input, p, span, text, textarea, ul)
-import Html.Attributes exposing (checked, href, name, src, style, type_, value)
+import Html.Attributes exposing (checked, href, name, src, style, type_, value, width)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
@@ -98,7 +98,14 @@ view : Model -> Document Msg
 view model =
     { title = "Elmlog"
     , body =
-        [ h2 "Elmlog"
+        [ Html.h2 []
+            [ img
+                [ src "images/icon-180.png"
+                , width 50
+                ]
+                []
+            , text " Elmlog"
+            ]
         , div
             [ style "margin" "10px"
             , style "overflow" "auto"
