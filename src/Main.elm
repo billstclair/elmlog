@@ -25,10 +25,10 @@ import Browser.Dom as Dom exposing (Viewport)
 import Browser.Events as Events
 import Browser.Navigation as Navigation exposing (Key)
 import Cmd.Extra exposing (addCmd, withCmd, withCmds, withNoCmd)
-import Elmlog.Types exposing (Message(..), MessageType(..), messageText)
-import Html exposing (Html, a, div, img, p, text, textarea)
-import Html.Attributes exposing (href, src, style)
-import Html.Events exposing (onClick, onInput)
+import Elmlog.Types exposing (InputType(..))
+import Html exposing (Html, a, div, fieldset, img, input, p, span, text, textarea)
+import Html.Attributes exposing (checked, href, name, src, style, type_, value)
+import Html.Events exposing (onCheck, onClick, onInput)
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
 import Json.Encode as JE exposing (Value)
@@ -50,29 +50,31 @@ main =
 type alias Model =
     { url : Url
     , key : Key
-    , messageType : MessageType
-    , message : Message
+    , userText : String
     , preview : Html Msg
+    , inputType : InputType
     }
 
 
 type Msg
-    = OnUrlRequest UrlRequest
+    = Noop
+    | OnUrlRequest UrlRequest
     | OnUrlChange Url
     | InputTextArea String
+    | SetInputType InputType
 
 
 init : Value -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
     let
-        message =
-            MarkdownMessage "Hello, World.\n\n**bold text.** _Italic text._ **_both._**\n\n[billstclair.com](https://billstclair.com/)\n\n![Mastodon](https://mammudeck.com/images/icon-192.png)"
+        userText =
+            "Hello, World.\n\n**bold text.** _Italic text._ **_both._**\n\n[billstclair.com](https://billstclair.com/)\n\n![Mastodon](https://mammudeck.com/images/icon-192.png)"
     in
     { url = url
     , key = key
-    , messageType = MarkdownType
-    , message = message
-    , preview = toHtml message
+    , userText = userText
+    , preview = toHtml userText MarkdownInput
+    , inputType = MarkdownInput
     }
         |> withNoCmd
 
@@ -106,7 +108,40 @@ view model =
                     [ style "width" "50em"
                     , style "height" "20em"
                     ]
-                    [ text <| messageText model.message ]
+                    [ text <| model.userText ]
+                , fieldset []
+                    [ radioButton
+                        { buttonValue = MarkdownInput
+                        , radioValue = model.inputType
+                        , radioName = "input-type"
+                        , setter = SetInputType MarkdownInput
+                        , label = "Markdown"
+                        }
+                    , br
+                    , radioButton
+                        { buttonValue = FilteredHtmlInput
+                        , radioValue = model.inputType
+                        , radioName = "input-type"
+                        , setter = SetInputType FilteredHtmlInput
+                        , label = "Filtered Html"
+                        }
+                    , br
+                    , radioButton
+                        { buttonValue = FullHtmlInput
+                        , radioValue = model.inputType
+                        , radioName = "input-type"
+                        , setter = SetInputType FullHtmlInput
+                        , label = "Full HTML"
+                        }
+                    , br
+                    , radioButton
+                        { buttonValue = RawHtmlInput
+                        , radioValue = model.inputType
+                        , radioName = "input-type"
+                        , setter = SetInputType RawHtmlInput
+                        , label = "Raw HTML"
+                        }
+                    ]
                 ]
             , h4 "Preview"
             , p []
@@ -124,17 +159,46 @@ view model =
     }
 
 
+br : Html msg
+br =
+    Html.br [] []
+
+
+radioButton : { buttonValue : a, radioValue : a, radioName : String, setter : Msg, label : String } -> Html Msg
+radioButton { buttonValue, radioValue, radioName, setter, label } =
+    span []
+        [ input
+            [ type_ "radio"
+            , name radioName
+            , value label
+            , checked <| buttonValue == radioValue
+            , onCheck <|
+                \checked ->
+                    if checked then
+                        setter
+
+                    else
+                        Noop
+            ]
+            []
+        , span
+            [ onClick setter
+            , style "cursor" "default"
+            ]
+            [ text label ]
+        ]
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        Noop ->
+            model |> withNoCmd
+
         InputTextArea string ->
-            let
-                message =
-                    MarkdownMessage string
-            in
             { model
-                | message = message
-                , preview = toHtml message
+                | userText = string
+                , preview = toHtml string model.inputType
             }
                 |> withNoCmd
 
@@ -155,27 +219,27 @@ update msg model =
             , Navigation.pushUrl model.key (Url.toString url)
             )
 
+        SetInputType inputType ->
+            { model | inputType = inputType } |> withNoCmd
 
-toHtml : Message -> Html Msg
-toHtml message =
-    case message of
-        TextMessage string ->
-            text string
 
-        FilteredHtmlMessage string ->
-            parseHtml string FilteredType
+toHtml : String -> InputType -> Html Msg
+toHtml string inputType =
+    case inputType of
+        FilteredHtmlInput ->
+            parseHtml string FilteredHtmlInput
 
-        PlainHtmlMessage string ->
-            parseHtml string PlainType
+        FullHtmlInput ->
+            parseHtml string FullHtmlInput
 
-        RawHtmlMessage string ->
-            parseHtml string RawType
+        RawHtmlInput ->
+            parseHtml string RawHtmlInput
 
-        MarkdownMessage string ->
+        MarkdownInput ->
             Markdown.toHtml [] string
 
 
-parseHtml : String -> MessageType -> Html Msg
+parseHtml : String -> InputType -> Html Msg
 parseHtml string messageType =
     -- TODO
     text string

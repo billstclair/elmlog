@@ -10,45 +10,14 @@
 ----------------------------------------------------------------------
 
 
-module Elmlog.Types exposing (Message(..), MessageType(..), messageText)
+module Elmlog.Types exposing (InputType(..))
 
-{-| Elmlog types.
+{-| User input type.
 -}
 
 
-{-| User message text.
--}
-type Message
-    = TextMessage String
-    | FilteredHtmlMessage String
-    | PlainHtmlMessage String
-    | RawHtmlMessage String
-    | MarkdownMessage String
-
-
-messageText : Message -> String
-messageText message =
-    case message of
-        TextMessage string ->
-            string
-
-        FilteredHtmlMessage string ->
-            string
-
-        PlainHtmlMessage string ->
-            string
-
-        RawHtmlMessage string ->
-            string
-
-        MarkdownMessage string ->
-            string
-
-
-{-| Message type.
--}
-type MessageType
-    = FilteredType
-    | PlainType
-    | RawType
-    | MarkdownType
+type InputType
+    = MarkdownInput
+    | FilteredHtmlInput
+    | FullHtmlInput
+    | RawHtmlInput
