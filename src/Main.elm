@@ -26,8 +26,8 @@ import Browser.Events as Events
 import Browser.Navigation as Navigation exposing (Key)
 import Cmd.Extra exposing (addCmd, withCmd, withCmds, withNoCmd)
 import Elmlog.Types exposing (InputType(..))
-import Html exposing (Html, a, div, fieldset, img, input, p, span, text, textarea, ul)
-import Html.Attributes exposing (checked, href, name, src, style, type_, value)
+import Html exposing (Html, a, div, fieldset, img, input, legend, p, span, text, textarea, ul)
+import Html.Attributes exposing (checked, disabled, href, name, src, style, type_, value, width)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
@@ -92,11 +92,23 @@ h4 string =
     Html.h3 [] [ text string ]
 
 
+inputTypeRadioName : String
+inputTypeRadioName =
+    "inputTypeRadioName"
+
+
 view : Model -> Document Msg
 view model =
     { title = "Elmlog"
     , body =
-        [ h2 "Elmlog"
+        [ Html.h2 []
+            [ img
+                [ src "images/icon-180.png"
+                , width 50
+                ]
+                []
+            , text " Elmlog"
+            ]
         , div
             [ style "margin" "10px"
             , style "overflow" "auto"
@@ -210,7 +222,7 @@ br =
     Html.br [] []
 
 
-radioButton : { buttonValue : a, radioValue : a, radioName : String, setter : Msg, label : String } -> Html Msg
+radioButton : { buttonValue : a, radioValue : a, radioName : String, setter : a -> Msg, label : String } -> Html Msg
 radioButton { buttonValue, radioValue, radioName, setter, label } =
     span []
         [ input
@@ -220,15 +232,11 @@ radioButton { buttonValue, radioValue, radioName, setter, label } =
             , checked <| buttonValue == radioValue
             , onCheck <|
                 \checked ->
-                    if checked then
-                        setter
-
-                    else
-                        Noop
+                    setter buttonValue
             ]
             []
         , span
-            [ onClick setter
+            [ onClick <| setter buttonValue
             , style "cursor" "default"
             ]
             [ text label ]
@@ -249,11 +257,14 @@ update msg model =
                 |> withNoCmd
 
         SetInputType inputType ->
-            { model
-                | inputType = inputType
-                , preview = toHtml model.userText inputType
-            }
-                |> withNoCmd
+            ( Debug.log
+                ("SetInputType \"" ++ Debug.toString inputType ++ "\", model")
+                { model
+                    | inputType = inputType
+                    , preview = toHtml model.userText inputType
+                }
+            , Cmd.none
+            )
 
         ToggleShowEditor ->
             { model
