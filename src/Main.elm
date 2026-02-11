@@ -262,22 +262,6 @@ update msg model =
             )
 
 
-labelToInputType : String -> InputType
-labelToInputType label =
-    case label of
-        "Filtered HTML" ->
-            FilteredHtmlInput
-
-        "Full HTML" ->
-            FullHtmlInput
-
-        "Raw HTML" ->
-            RawHtmlInput
-
-        _ ->
-            MarkdownInput
-
-
 toHtml : String -> InputType -> Html Msg
 toHtml string inputType =
     case inputType of
