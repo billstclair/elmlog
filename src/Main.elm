@@ -53,6 +53,7 @@ type alias Model =
     , userText : String
     , preview : Html Msg
     , inputType : InputType
+    , showEditor : Bool
     }
 
 
@@ -62,6 +63,7 @@ type Msg
     | OnUrlChange Url
     | InputTextArea String
     | SetInputType InputType
+    | ToggleShowEditor
 
 
 init : Value -> Url -> Key -> ( Model, Cmd Msg )
@@ -75,6 +77,7 @@ init flags url key =
     , userText = userText
     , preview = toHtml userText MarkdownInput
     , inputType = MarkdownInput
+    , showEditor = True
     }
         |> withNoCmd
 
@@ -99,62 +102,27 @@ view model =
             , style "overflow" "auto"
             , style "height" "90%"
             ]
-            [ h4 "Content"
-            , p
-                [ style "margin" "10px"
-                , onInput InputTextArea
-                ]
-                [ textarea
-                    [ style "width" "50em"
-                    , style "height" "10em"
-                    ]
-                    [ text model.userText ]
-                , fieldset []
-                    [ radioButton
-                        { buttonValue = MarkdownInput
-                        , radioValue = model.inputType
-                        , radioName = "input-type"
-                        , setter = SetInputType MarkdownInput
-                        , label = "Markdown"
-                        }
-                    , br
-                    , radioButton
-                        { buttonValue = FilteredHtmlInput
-                        , radioValue = model.inputType
-                        , radioName = "input-type"
-                        , setter = SetInputType FilteredHtmlInput
-                        , label = "Filtered Html"
-                        }
-                    , bullets
-                        [ li "convert line and paragraph breaks to <br> & <p>"
-                        , li "convert URLs and email address to links"
-                        , li "allowed HTML tags: <a> <em> <strong> <cite> <code> <ul> <ol> <li> <dl> <dt> <dd> <i> <b> <u> <blockquote> <pre>"
-                        ]
-                    , radioButton
-                        { buttonValue = FullHtmlInput
-                        , radioValue = model.inputType
-                        , radioName = "input-type"
-                        , setter = SetInputType FullHtmlInput
-                        , label = "Full HTML"
-                        }
-                    , bullets
-                        [ li "convert line and paragraph breaks to <br> & <p>"
-                        , li "convert URLs and email address to links"
-                        ]
-                    , radioButton
-                        { buttonValue = RawHtmlInput
-                        , radioValue = model.inputType
-                        , radioName = "input-type"
-                        , setter = SetInputType RawHtmlInput
-                        , label = "Raw HTML"
-                        }
-                    ]
-                ]
-            , h4 "Preview"
-            , p []
+            [ p []
                 [ model.preview ]
+            , if not model.showEditor then
+                a
+                    [ href "#"
+                    , onClick ToggleShowEditor
+                    ]
+                    [ text "-- show editor --" ]
+
+              else
+                span []
+                    [ a
+                        [ href "#"
+                        , onClick ToggleShowEditor
+                        ]
+                        [ text "-- hide editor --" ]
+                    , editor model
+                    ]
             , p []
-                [ a [ href "https://github.com/billstclair/elmlog" ]
+                [ br
+                , a [ href "https://github.com/billstclair/elmlog" ]
                     [ img
                         [ src "images/GitHub-Mark-32px.png"
                         ]
@@ -164,6 +132,63 @@ view model =
             ]
         ]
     }
+
+
+editor : Model -> Html Msg
+editor model =
+    span []
+        [ h4 "Content"
+        , p
+            [ style "margin" "10px"
+            , onInput InputTextArea
+            ]
+            [ textarea
+                [ style "width" "50em"
+                , style "height" "10em"
+                ]
+                [ text model.userText ]
+            , fieldset []
+                [ radioButton
+                    { buttonValue = MarkdownInput
+                    , radioValue = model.inputType
+                    , radioName = "input-type"
+                    , setter = SetInputType MarkdownInput
+                    , label = "Markdown"
+                    }
+                , br
+                , radioButton
+                    { buttonValue = FilteredHtmlInput
+                    , radioValue = model.inputType
+                    , radioName = "input-type"
+                    , setter = SetInputType FilteredHtmlInput
+                    , label = "Filtered Html"
+                    }
+                , bullets
+                    [ li "convert line and paragraph breaks to <br> & <p>"
+                    , li "convert URLs and email address to links"
+                    , li "allowed HTML tags: <a> <em> <strong> <cite> <code> <ul> <ol> <li> <dl> <dt> <dd> <i> <b> <u> <blockquote> <pre>"
+                    ]
+                , radioButton
+                    { buttonValue = FullHtmlInput
+                    , radioValue = model.inputType
+                    , radioName = "input-type"
+                    , setter = SetInputType FullHtmlInput
+                    , label = "Full HTML"
+                    }
+                , bullets
+                    [ li "convert line and paragraph breaks to <br> & <p>"
+                    , li "convert URLs and email address to links"
+                    ]
+                , radioButton
+                    { buttonValue = RawHtmlInput
+                    , radioValue = model.inputType
+                    , radioName = "input-type"
+                    , setter = SetInputType RawHtmlInput
+                    , label = "Raw HTML"
+                    }
+                ]
+            ]
+        ]
 
 
 bullets : List (Html msg) -> Html msg
@@ -230,6 +255,12 @@ update msg model =
             }
                 |> withNoCmd
 
+        ToggleShowEditor ->
+            { model
+                | showEditor = not model.showEditor
+            }
+                |> withNoCmd
+
         OnUrlRequest request ->
             case request of
                 Internal url ->
@@ -244,7 +275,9 @@ update msg model =
 
         OnUrlChange url ->
             ( model
-            , Navigation.pushUrl model.key (Url.toString url)
+            , Cmd.none
+              --            , Navigation.pushUrl model.key <|
+              --                Debug.log "  " (Url.toString <| Debug.log "OnUrlChange" url)
             )
 
 
