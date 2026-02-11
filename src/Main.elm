@@ -151,12 +151,11 @@ editor model =
     span []
         [ h4 "Content"
         , p
-            [ style "margin" "10px"
-            , onInput InputTextArea
-            ]
+            [ style "margin" "10px" ]
             [ textarea
                 [ style "width" "50em"
                 , style "height" "10em"
+                , onInput InputTextArea
                 ]
                 [ text model.userText ]
             , fieldset []
@@ -164,7 +163,7 @@ editor model =
                     { buttonValue = MarkdownInput
                     , radioValue = model.inputType
                     , radioName = "input-type"
-                    , setter = SetInputType MarkdownInput
+                    , setter = SetInputType
                     , label = "Markdown"
                     }
                 , br
@@ -172,7 +171,7 @@ editor model =
                     { buttonValue = FilteredHtmlInput
                     , radioValue = model.inputType
                     , radioName = "input-type"
-                    , setter = SetInputType FilteredHtmlInput
+                    , setter = SetInputType
                     , label = "Filtered Html"
                     }
                 , bullets
@@ -184,7 +183,7 @@ editor model =
                     { buttonValue = FullHtmlInput
                     , radioValue = model.inputType
                     , radioName = "input-type"
-                    , setter = SetInputType FullHtmlInput
+                    , setter = SetInputType
                     , label = "Full HTML"
                     }
                 , bullets
@@ -195,7 +194,7 @@ editor model =
                     { buttonValue = RawHtmlInput
                     , radioValue = model.inputType
                     , radioName = "input-type"
-                    , setter = SetInputType RawHtmlInput
+                    , setter = SetInputType
                     , label = "Raw HTML"
                     }
                 ]
