@@ -27,7 +27,7 @@ import Browser.Navigation as Navigation exposing (Key)
 import Cmd.Extra exposing (addCmd, withCmd, withCmds, withNoCmd)
 import Elmlog.Types exposing (InputType(..))
 import Html exposing (Html, a, div, fieldset, img, input, legend, p, span, text, textarea, ul)
-import Html.Attributes exposing (checked, href, name, src, style, type_, value, width)
+import Html.Attributes exposing (checked, disabled, href, name, src, style, type_, value, width)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
@@ -123,49 +123,41 @@ view model =
                     ]
                     [ text model.userText ]
                 , fieldset
-                    [ style "border-block-color" "gray"
-                    , style "border-style" "dashed"
-                    , style "border-color" "lightgray"
-                    , style "border-width" "1"
-                    ]
+                    [ style "border" "1px dashed gray" ]
                     [ legend [] [ text "Input format" ]
-                    , radioButton
-                        { buttonValue = MarkdownInput
-                        , radioValue = model.inputType
-                        , radioName = inputTypeRadioName
-                        , setter = SetInputType
+                    , simpleRadioButton
+                        { radioName = inputTypeRadioName
+                        , setter = SetInputType MarkdownInput
                         , label = "Markdown"
+                        , isChecked = model.inputType == MarkdownInput
                         }
                     , br
-                    , radioButton
-                        { buttonValue = FilteredHtmlInput
-                        , radioValue = model.inputType
-                        , radioName = inputTypeRadioName
-                        , setter = SetInputType
-                        , label = "Filtered Html"
+                    , simpleRadioButton
+                        { radioName = inputTypeRadioName
+                        , setter = SetInputType FilteredHtmlInput
+                        , label = "Filtered HTML"
+                        , isChecked = model.inputType == FilteredHtmlInput
                         }
                     , bullets
                         [ li "convert line and paragraph breaks to <br> & <p>"
                         , li "convert URLs and email address to links"
                         , li "allowed HTML tags: <a> <em> <strong> <cite> <code> <ul> <ol> <li> <dl> <dt> <dd> <i> <b> <u> <blockquote> <pre>"
                         ]
-                    , radioButton
-                        { buttonValue = FullHtmlInput
-                        , radioValue = model.inputType
-                        , radioName = inputTypeRadioName
-                        , setter = SetInputType
+                    , simpleRadioButton
+                        { radioName = inputTypeRadioName
+                        , setter = SetInputType FullHtmlInput
                         , label = "Full HTML"
+                        , isChecked = model.inputType == FullHtmlInput
                         }
                     , bullets
                         [ li "convert line and paragraph breaks to <br> & <p>"
                         , li "convert URLs and email address to links"
                         ]
-                    , radioButton
-                        { buttonValue = RawHtmlInput
-                        , radioValue = model.inputType
-                        , radioName = inputTypeRadioName
-                        , setter = SetInputType
+                    , simpleRadioButton
+                        { radioName = inputTypeRadioName
+                        , setter = SetInputType RawHtmlInput
                         , label = "Raw HTML"
+                        , isChecked = model.inputType == RawHtmlInput
                         }
                     ]
                 ]
@@ -214,7 +206,11 @@ radioButton { buttonValue, radioValue, radioName, setter, label } =
             , checked <| buttonValue == radioValue
             , onCheck <|
                 \checked ->
-                    setter radioValue
+                    if checked then
+                        setter radioValue
+
+                    else
+                        Noop
             ]
             []
         , span
@@ -222,6 +218,23 @@ radioButton { buttonValue, radioValue, radioName, setter, label } =
             , style "cursor" "default"
             ]
             [ text label ]
+        ]
+
+
+simpleRadioButton : { radioName : String, setter : Msg, label : String, isChecked : Bool } -> Html Msg
+simpleRadioButton { radioName, setter, label, isChecked } =
+    span
+        [ onClick setter
+        , style "cursor" "default"
+        ]
+        [ input
+            [ type_ "radio"
+            , name radioName
+            , value label
+            , checked isChecked
+            ]
+            []
+        , text label
         ]
 
 
@@ -264,6 +277,22 @@ update msg model =
             ( model
             , Navigation.pushUrl model.key (Url.toString url)
             )
+
+
+labelToInputType : String -> InputType
+labelToInputType label =
+    case label of
+        "Filtered HTML" ->
+            FilteredHtmlInput
+
+        "Full HTML" ->
+            FullHtmlInput
+
+        "Raw HTML" ->
+            RawHtmlInput
+
+        _ ->
+            MarkdownInput
 
 
 toHtml : String -> InputType -> Html Msg
