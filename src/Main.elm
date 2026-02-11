@@ -114,50 +114,54 @@ view model =
             [ h4 "Content"
             , p
                 [ style "margin" "10px"
-                , onInput InputTextArea
                 ]
                 [ textarea
                     [ style "width" "50em"
                     , style "height" "10em"
                     , value model.userText
+                    , onInput InputTextArea
                     ]
                     [ text model.userText ]
                 , fieldset
                     [ style "border" "1px dashed gray" ]
                     [ legend [] [ text "Input format" ]
-                    , simpleRadioButton
-                        { radioName = inputTypeRadioName
-                        , setter = SetInputType MarkdownInput
+                    , radioButton
+                        { buttonValue = MarkdownInput
+                        , radioValue = model.inputType
+                        , radioName = inputTypeRadioName
+                        , setter = SetInputType
                         , label = "Markdown"
-                        , isChecked = model.inputType == MarkdownInput
                         }
                     , br
-                    , simpleRadioButton
-                        { radioName = inputTypeRadioName
-                        , setter = SetInputType FilteredHtmlInput
+                    , radioButton
+                        { buttonValue = FilteredHtmlInput
+                        , radioValue = model.inputType
+                        , radioName = inputTypeRadioName
+                        , setter = SetInputType
                         , label = "Filtered HTML"
-                        , isChecked = model.inputType == FilteredHtmlInput
                         }
                     , bullets
                         [ li "convert line and paragraph breaks to <br> & <p>"
                         , li "convert URLs and email address to links"
                         , li "allowed HTML tags: <a> <em> <strong> <cite> <code> <ul> <ol> <li> <dl> <dt> <dd> <i> <b> <u> <blockquote> <pre>"
                         ]
-                    , simpleRadioButton
-                        { radioName = inputTypeRadioName
-                        , setter = SetInputType FullHtmlInput
+                    , radioButton
+                        { buttonValue = FullHtmlInput
+                        , radioValue = model.inputType
+                        , radioName = inputTypeRadioName
+                        , setter = SetInputType
                         , label = "Full HTML"
-                        , isChecked = model.inputType == FullHtmlInput
                         }
                     , bullets
                         [ li "convert line and paragraph breaks to <br> & <p>"
                         , li "convert URLs and email address to links"
                         ]
-                    , simpleRadioButton
-                        { radioName = inputTypeRadioName
-                        , setter = SetInputType RawHtmlInput
+                    , radioButton
+                        { buttonValue = RawHtmlInput
+                        , radioValue = model.inputType
+                        , radioName = inputTypeRadioName
+                        , setter = SetInputType
                         , label = "Raw HTML"
-                        , isChecked = model.inputType == RawHtmlInput
                         }
                     ]
                 ]
@@ -206,35 +210,14 @@ radioButton { buttonValue, radioValue, radioName, setter, label } =
             , checked <| buttonValue == radioValue
             , onCheck <|
                 \checked ->
-                    if checked then
-                        setter radioValue
-
-                    else
-                        Noop
+                    setter buttonValue
             ]
             []
         , span
-            [ onClick <| setter radioValue
+            [ onClick <| setter buttonValue
             , style "cursor" "default"
             ]
             [ text label ]
-        ]
-
-
-simpleRadioButton : { radioName : String, setter : Msg, label : String, isChecked : Bool } -> Html Msg
-simpleRadioButton { radioName, setter, label, isChecked } =
-    span
-        [ onClick setter
-        , style "cursor" "default"
-        ]
-        [ input
-            [ type_ "radio"
-            , name radioName
-            , value label
-            , checked isChecked
-            ]
-            []
-        , text label
         ]
 
 
