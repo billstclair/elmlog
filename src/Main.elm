@@ -26,7 +26,7 @@ import Browser.Events as Events
 import Browser.Navigation as Navigation exposing (Key)
 import Cmd.Extra exposing (addCmd, withCmd, withCmds, withNoCmd)
 import Elmlog.Types exposing (InputType(..))
-import Html exposing (Html, a, div, fieldset, img, input, p, span, text, textarea, ul)
+import Html exposing (Html, a, div, fieldset, img, input, legend, p, span, text, textarea, ul)
 import Html.Attributes exposing (checked, href, name, src, style, type_, value, width)
 import Html.Events exposing (onCheck, onClick, onInput)
 import Json.Decode as JD exposing (Decoder)
@@ -122,8 +122,14 @@ view model =
                     , value model.userText
                     ]
                     [ text model.userText ]
-                , fieldset []
-                    [ radioButton
+                , fieldset
+                    [ style "border-block-color" "gray"
+                    , style "border-style" "dashed"
+                    , style "border-color" "lightgray"
+                    , style "border-width" "1"
+                    ]
+                    [ legend [] [ text "Input format" ]
+                    , radioButton
                         { buttonValue = MarkdownInput
                         , radioValue = model.inputType
                         , radioName = inputTypeRadioName
