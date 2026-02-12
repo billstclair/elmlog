@@ -101,20 +101,20 @@ view : Model -> Document Msg
 view model =
     { title = "Elmlog"
     , body =
-        [ Html.h2 []
-            [ img
-                [ src "images/icon-180.png"
-                , width 50
-                ]
-                []
-            , text " Elmlog"
-            ]
-        , div
+        [ div
             [ style "margin" "10px"
             , style "overflow" "auto"
             , style "height" "90%"
             ]
-            [ p []
+            [ Html.h2 []
+                [ img
+                    [ src "images/icon-180.png"
+                    , width 50
+                    ]
+                    []
+                , text " Elmlog"
+                ]
+            , p []
                 [ model.preview ]
             , if not model.showEditor then
                 a
@@ -131,16 +131,15 @@ view model =
                         ]
                         [ text "-- hide editor --" ]
                     , editor model
-                    ]
-            , p []
-                [ br
-                , a [ href "https://github.com/billstclair/elmlog" ]
-                    [ img
-                        [ src "images/GitHub-Mark-32px.png"
+                    , p []
+                        [ a [ href "https://github.com/billstclair/elmlog" ]
+                            [ img
+                                [ src "images/GitHub-Mark-32px.png"
+                                ]
+                                []
+                            ]
                         ]
-                        []
                     ]
-                ]
             ]
         ]
     }
