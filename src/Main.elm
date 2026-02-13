@@ -301,21 +301,43 @@ toHtml string inputType =
 
         FilteredHtmlInput ->
             parseHtml string FilteredHtmlInput
+                |> Tuple.first
 
         FullHtmlInput ->
             parseHtml string FullHtmlInput
+                |> Tuple.first
 
         RawHtmlInput ->
             parseHtml string RawHtmlInput
+                |> Tuple.first
 
 
-parseHtml : String -> InputType -> Html Msg
+{-| The first return value is error message if there was one.
+The second return value is either the original string or a filtered version.
+-}
+parseHtml : String -> InputType -> ( Html Msg, String )
 parseHtml string inputType =
     case Html.Parser.run string of
         Err deadEnds ->
-            text <| Parser.deadEndsToString deadEnds
+            ( text <| deadEndsToString deadEnds, string )
 
         Ok nodes ->
-            span [] <|
-                toVirtualDom <|
-                    Debug.log "nodes" nodes
+            ( span [] <|
+                toVirtualDom nodes
+            , nodesToString nodes
+            )
+
+
+nodesToString : List Html.Parser.Node -> String
+nodesToString nodes =
+    List.map Html.Parser.nodeToString nodes
+        |> String.concat
+
+
+
+-- Parser.deadendsToString has not yet been implemented.
+
+
+deadEndsToString : deadends -> String
+deadEndsToString deadends =
+    Debug.toString deadends
