@@ -29,10 +29,13 @@ import Elmlog.Types exposing (InputType(..))
 import Html exposing (Html, a, div, fieldset, img, input, legend, p, span, text, textarea, ul)
 import Html.Attributes exposing (checked, disabled, href, name, src, style, type_, value, width)
 import Html.Events exposing (onCheck, onClick, onInput)
+import Html.Parser exposing (run)
+import Html.Parser.Util exposing (toVirtualDom)
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
 import Json.Encode as JE exposing (Value)
 import Markdown
+import Parser exposing (deadEndsToString)
 import Url exposing (Url)
 
 
@@ -293,6 +296,9 @@ update msg model =
 toHtml : String -> InputType -> Html Msg
 toHtml string inputType =
     case inputType of
+        MarkdownInput ->
+            Markdown.toHtml [] string
+
         FilteredHtmlInput ->
             parseHtml string FilteredHtmlInput
 
@@ -302,11 +308,14 @@ toHtml string inputType =
         RawHtmlInput ->
             parseHtml string RawHtmlInput
 
-        MarkdownInput ->
-            Markdown.toHtml [] string
-
 
 parseHtml : String -> InputType -> Html Msg
-parseHtml string messageType =
-    -- TODO
-    text <| Debug.log "parseHtml" string
+parseHtml string inputType =
+    case Html.Parser.run string of
+        Err deadEnds ->
+            text <| Parser.deadEndsToString deadEnds
+
+        Ok nodes ->
+            span [] <|
+                toVirtualDom <|
+                    Debug.log "nodes" nodes
