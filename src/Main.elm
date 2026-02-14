@@ -55,6 +55,7 @@ type alias Model =
     , key : Key
     , userText : String
     , preview : Html Msg
+    , error : Maybe String
     , inputType : InputType
     , showEditor : Bool
     }
@@ -69,16 +70,25 @@ type Msg
     | ToggleShowEditor
 
 
+defaultInputType : InputType
+defaultInputType =
+    MarkdownInput
+
+
 init : Value -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         userText =
             "Hello, World.\n\n**bold text.** _Italic text._ **_both._**\n\n[billstclair.com](https://billstclair.com/)\n\n![Mastodon](https://mammudeck.com/images/icon-192.png)"
+
+        ( preview, error ) =
+            toHtml userText defaultInputType
     in
     { url = url
     , key = key
     , userText = userText
-    , preview = toHtml userText MarkdownInput
+    , preview = preview
+    , error = error
     , inputType = MarkdownInput
     , showEditor = True
     }
@@ -92,7 +102,7 @@ h2 string =
 
 h4 : String -> Html Msg
 h4 string =
-    Html.h3 [] [ text string ]
+    Html.h4 [] [ text string ]
 
 
 inputTypeRadioName : String
@@ -133,6 +143,15 @@ view model =
                         , onClick ToggleShowEditor
                         ]
                         [ text "-- hide editor --" ]
+                    , case model.error of
+                        Nothing ->
+                            text ""
+
+                        Just string ->
+                            span []
+                                [ h4 "Error"
+                                , text string
+                                ]
                     , editor model
                     , p []
                         [ a [ href "https://github.com/billstclair/elmlog" ]
@@ -251,18 +270,28 @@ update msg model =
             model |> withNoCmd
 
         InputTextArea string ->
+            let
+                ( preview, error ) =
+                    toHtml string model.inputType
+            in
             { model
                 | userText = string
-                , preview = toHtml string model.inputType
+                , preview = preview
+                , error = error
             }
                 |> withNoCmd
 
         SetInputType inputType ->
+            let
+                ( preview, error ) =
+                    toHtml model.userText inputType
+            in
             ( Debug.log
                 ("SetInputType \"" ++ Debug.toString inputType ++ "\", model")
                 { model
                     | inputType = inputType
-                    , preview = toHtml model.userText inputType
+                    , preview = preview
+                    , error = error
                 }
             , Cmd.none
             )
@@ -293,38 +322,37 @@ update msg model =
             )
 
 
-toHtml : String -> InputType -> Html Msg
+toHtml : String -> InputType -> ( Html Msg, Maybe String )
 toHtml string inputType =
     case inputType of
         MarkdownInput ->
-            Markdown.toHtml [] string
+            ( Markdown.toHtml [] string
+            , Nothing
+            )
 
         FilteredHtmlInput ->
             parseHtml string FilteredHtmlInput
-                |> Tuple.first
 
         FullHtmlInput ->
             parseHtml string FullHtmlInput
-                |> Tuple.first
 
         RawHtmlInput ->
             parseHtml string RawHtmlInput
-                |> Tuple.first
 
 
 {-| The first return value is error message if there was one.
 The second return value is either the original string or a filtered version.
 -}
-parseHtml : String -> InputType -> ( Html Msg, String )
+parseHtml : String -> InputType -> ( Html Msg, Maybe String )
 parseHtml string inputType =
     case Html.Parser.run string of
         Err deadEnds ->
-            ( text <| deadEndsToString deadEnds, string )
+            ( text string, Just <| deadEndsToString deadEnds )
 
         Ok nodes ->
             ( span [] <|
                 toVirtualDom nodes
-            , nodesToString nodes
+            , Nothing
             )
 
 
