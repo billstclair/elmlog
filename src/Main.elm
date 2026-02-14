@@ -72,15 +72,16 @@ type Msg
 
 defaultInputType : InputType
 defaultInputType =
-    MarkdownInput
+    FilteredHtmlInput
 
 
 init : Value -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         userText =
-            "Hello, World.\n\n**bold text.** _Italic text._ **_both._**\n\n[billstclair.com](https://billstclair.com/)\n\n![Mastodon](https://mammudeck.com/images/icon-192.png)"
+            "<b>bold</b> <i>italic</i> <b><i>both</i></b>"
 
+        -- "Hello, World.\n\n**bold text.** _Italic text._ **_both._**\n\n[billstclair.com](https://billstclair.com/)\n\n![Mastodon](https://mammudeck.com/images/icon-192.png)"
         ( preview, error ) =
             toHtml userText defaultInputType
     in
@@ -89,7 +90,7 @@ init flags url key =
     , userText = userText
     , preview = preview
     , error = error
-    , inputType = MarkdownInput
+    , inputType = defaultInputType
     , showEditor = True
     }
         |> withNoCmd
@@ -143,15 +144,6 @@ view model =
                         , onClick ToggleShowEditor
                         ]
                         [ text "-- hide editor --" ]
-                    , case model.error of
-                        Nothing ->
-                            text ""
-
-                        Just string ->
-                            span []
-                                [ h4 "Error"
-                                , text string
-                                ]
                     , editor model
                     , p []
                         [ a [ href "https://github.com/billstclair/elmlog" ]
@@ -179,6 +171,17 @@ editor model =
                 , onInput InputTextArea
                 ]
                 [ text model.userText ]
+            , case model.error of
+                Nothing ->
+                    text ""
+
+                Just string ->
+                    div []
+                        [ h4 "Error"
+                        , text string
+                        , br
+                        , br
+                        ]
             , fieldset []
                 [ radioButton
                     { buttonValue = MarkdownInput
