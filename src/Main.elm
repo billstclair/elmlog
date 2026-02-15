@@ -81,6 +81,7 @@ init flags url key =
         userText =
             "<b>bold</b> <i>italic</i> <b><i>both</i></b>"
 
+        -- defaultInputType = MarkdownInput
         -- "Hello, World.\n\n**bold text.** _Italic text._ **_both._**\n\n[billstclair.com](https://billstclair.com/)\n\n![Mastodon](https://mammudeck.com/images/icon-192.png)"
         ( preview, error ) =
             toHtml userText defaultInputType
@@ -353,10 +354,38 @@ parseHtml string inputType =
             ( text string, Just <| deadEndsToString deadEnds )
 
         Ok nodes ->
+            let
+                filteredNodes =
+                    case inputType of
+                        FilteredHtmlInput ->
+                            addPsAndBRs nodes
+                                |> filteredHtmlNodes
+
+                        FullHtmlInput ->
+                            addPsAndBRs nodes
+
+                        RawHtmlInput ->
+                            nodes
+
+                        _ ->
+                            nodes
+            in
             ( span [] <|
-                toVirtualDom nodes
+                toVirtualDom filteredNodes
             , Nothing
             )
+
+
+addPsAndBRs : List Html.Parser.Node -> List Html.Parser.Node
+addPsAndBRs nodes =
+    -- TODO
+    nodes
+
+
+filteredHtmlNodes : List Html.Parser.Node -> List Html.Parser.Node
+filteredHtmlNodes nodes =
+    -- TODO
+    nodes
 
 
 nodesToString : List Html.Parser.Node -> String
