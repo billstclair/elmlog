@@ -35,7 +35,7 @@ import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
 import Json.Encode as JE exposing (Value)
 import Markdown
-import Parser exposing (deadEndsToString)
+import Parser exposing (DeadEnd)
 import Url exposing (Url)
 
 
@@ -55,7 +55,7 @@ type alias Model =
     , key : Key
     , userText : String
     , preview : Html Msg
-    , error : Maybe String
+    , error : Maybe (List DeadEnd)
     , inputType : InputType
     , showEditor : Bool
     }
@@ -83,14 +83,14 @@ init flags url key =
 
         -- defaultInputType = MarkdownInput
         -- "Hello, World.\n\n**bold text.** _Italic text._ **_both._**\n\n[billstclair.com](https://billstclair.com/)\n\n![Mastodon](https://mammudeck.com/images/icon-192.png)"
-        ( preview, error ) =
+        ( preview, maybeDeadends ) =
             toHtml userText defaultInputType
     in
     { url = url
     , key = key
     , userText = userText
     , preview = preview
-    , error = error
+    , error = maybeDeadends
     , inputType = defaultInputType
     , showEditor = True
     }
@@ -176,10 +176,10 @@ editor model =
                 Nothing ->
                     text ""
 
-                Just string ->
+                Just deadends ->
                     div []
                         [ h4 "Error"
-                        , text string
+                        , text <| deadEndsToString deadends
                         , br
                         , br
                         ]
@@ -326,7 +326,7 @@ update msg model =
             )
 
 
-toHtml : String -> InputType -> ( Html Msg, Maybe String )
+toHtml : String -> InputType -> ( Html Msg, Maybe (List DeadEnd) )
 toHtml string inputType =
     case inputType of
         MarkdownInput ->
@@ -344,14 +344,25 @@ toHtml string inputType =
             parseHtml string RawHtmlInput
 
 
+{-| The <elmlog>...</elmlog> tag does nothing. It isn't even defined.
+-}
+elmlog : String -> Html msg
+elmlog string =
+    Html.node "elmlog"
+        []
+        [ text string ]
+
+
 {-| The first return value is error message if there was one.
 The second return value is either the original string or a filtered version.
 -}
-parseHtml : String -> InputType -> ( Html Msg, Maybe String )
+parseHtml : String -> InputType -> ( Html Msg, Maybe (List DeadEnd) )
 parseHtml string inputType =
     case Html.Parser.run string of
         Err deadEnds ->
-            ( text string, Just <| deadEndsToString deadEnds )
+            ( elmlog string
+            , Just deadEnds
+            )
 
         Ok nodes ->
             let
