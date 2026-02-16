@@ -29,7 +29,7 @@ import Elmlog.Types exposing (InputType(..))
 import Html exposing (Html, a, div, fieldset, img, input, legend, p, span, text, textarea, ul)
 import Html.Attributes exposing (checked, disabled, href, name, src, style, type_, value, width)
 import Html.Events exposing (onCheck, onClick, onInput)
-import Html.Parser exposing (run)
+import Html.Parser exposing (Node(..), run)
 import Html.Parser.Util exposing (toVirtualDom)
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
@@ -389,6 +389,45 @@ parseHtml string inputType =
 
 addPsAndBRs : List Html.Parser.Node -> List Html.Parser.Node
 addPsAndBRs nodes =
+    -- TODO
+    addBRs <| addPs nodes
+
+
+addPs : List Html.Parser.Node -> List Html.Parser.Node
+addPs nodes =
+    let
+        loop : List Html.Parser.Node -> List Html.Parser.Node -> List Html.Parser.Node
+        loop prev list =
+            case list of
+                [] ->
+                    List.reverse prev
+
+                node :: rest ->
+                    -- TODO: make this actually do something
+                    case node of
+                        Text string ->
+                            case String.split "\n\n" string of
+                                [] ->
+                                    List.reverse prev
+
+                                [ s ] ->
+                                    loop (Text s :: prev) rest
+
+                                s :: srest ->
+                                    loop (Text (String.concat (s :: srest)) :: prev) <|
+                                        rest
+
+                        Element _ _ _ ->
+                            loop (node :: prev) rest
+
+                        Comment _ ->
+                            loop (node :: prev) rest
+    in
+    loop [] nodes
+
+
+addBRs : List Html.Parser.Node -> List Html.Parser.Node
+addBRs nodes =
     -- TODO
     nodes
 
