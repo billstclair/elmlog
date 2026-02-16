@@ -397,11 +397,11 @@ addPsAndBRs nodes =
 addPs : List Html.Parser.Node -> List Html.Parser.Node
 addPs nodes =
     let
-        loop : List Html.Parser.Node -> List Html.Parser.Node -> List Html.Parser.Node
-        loop prev list =
+        loop : List Html.Parser.Node -> List Html.Parser.Node -> List Html.Parser.Node -> List Html.Parser.Node
+        loop prev para list =
             case list of
                 [] ->
-                    List.reverse prev
+                    List.append para <| List.reverse prev
 
                 node :: rest ->
                     -- TODO: make this actually do something
@@ -409,22 +409,29 @@ addPs nodes =
                         Text string ->
                             case String.split "\n\n" string of
                                 [] ->
-                                    List.reverse prev
+                                    List.append para <| List.reverse prev
 
                                 [ s ] ->
-                                    loop (Text s :: prev) rest
+                                    loop (List.concat [ prev, List.reverse para, [ Text s ] ])
+                                        []
+                                        rest
 
                                 s :: srest ->
-                                    loop (Text (String.concat (s :: srest)) :: prev) <|
+                                    let
+                                        paras =
+                                            List.map (\ss -> Element "p" [] [ Text ss ]) srest
+                                    in
+                                    loop (List.reverse paras ++ [ Element "p" [] <| List.concat [ para, [ Text s ] ] ] ++ prev)
+                                        []
                                         rest
 
                         Element _ _ _ ->
-                            loop (node :: prev) rest
+                            loop (node :: List.reverse para ++ prev) [] rest
 
                         Comment _ ->
-                            loop (node :: prev) rest
+                            loop (node :: List.reverse para ++ prev) [] rest
     in
-    loop [] nodes
+    loop [] [] nodes
 
 
 isText : Html.Parser.Node -> Bool
