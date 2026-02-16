@@ -34,6 +34,7 @@ import Html.Parser.Util exposing (toVirtualDom)
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
 import Json.Encode as JE exposing (Value)
+import List.Extra
 import Markdown
 import Parser exposing (DeadEnd)
 import Url exposing (Url)
@@ -426,10 +427,47 @@ addPs nodes =
     loop [] nodes
 
 
+isText : Html.Parser.Node -> Bool
+isText node =
+    case node of
+        Text _ ->
+            True
+
+        _ ->
+            False
+
+
 addBRs : List Html.Parser.Node -> List Html.Parser.Node
 addBRs nodes =
-    -- TODO
-    nodes
+    List.Extra.updateIf isText nLtoBR nodes
+
+
+nLtoBR : Html.Parser.Node -> Html.Parser.Node
+nLtoBR node =
+    case node of
+        Text s ->
+            case String.split "\n" s of
+                [] ->
+                    node
+
+                [ _ ] ->
+                    node
+
+                ss ->
+                    Element "span"
+                        []
+                    <|
+                        (List.map Text ss
+                            |> List.intersperse brElement
+                        )
+
+        _ ->
+            node
+
+
+brElement : Html.Parser.Node
+brElement =
+    Element "br" [] []
 
 
 filteredHtmlNodes : List Html.Parser.Node -> List Html.Parser.Node
