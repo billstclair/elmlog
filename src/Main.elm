@@ -403,7 +403,7 @@ addPs nodes =
         loop prev para list =
             case list of
                 [] ->
-                    List.append para <| List.reverse prev
+                    List.append (List.reverse prev) para
 
                 node :: rest ->
                     -- TODO: make this actually do something
@@ -411,7 +411,7 @@ addPs nodes =
                         Text string ->
                             case String.split "\n\n" string of
                                 [] ->
-                                    List.append para <| List.reverse prev
+                                    List.append (List.reverse prev) para
 
                                 [ s ] ->
                                     loop (List.concat [ [ Text s ], List.reverse para, prev ])
@@ -423,12 +423,22 @@ addPs nodes =
                                         paras =
                                             List.map (\ss -> Element "p" [] [ Text ss ]) srest
                                     in
-                                    loop (List.reverse paras ++ [ Element "p" [] <| List.concat [ para, [ Text s ] ] ] ++ prev)
+                                    loop (prev ++ List.reverse paras ++ [ Element "p" [] <| List.concat [ para, [ Text s ] ] ])
                                         []
                                         rest
 
-                        Element _ _ _ ->
-                            loop (node :: List.reverse para ++ prev) [] rest
+                        Element name attribs subnodes ->
+                            loop
+                                prev
+                                (List.append
+                                    para
+                                    [ Element name
+                                        attribs
+                                      <|
+                                        addPs subnodes
+                                    ]
+                                )
+                                rest
 
                         Comment _ ->
                             loop (node :: List.reverse para ++ prev) [] rest
