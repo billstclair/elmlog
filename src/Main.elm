@@ -458,16 +458,14 @@ isText node =
 
 addBRs : List Html.Parser.Node -> List Html.Parser.Node
 addBRs nodes =
-    Debug.log "  " <|
-        List.map nLtoBR <|
-            Debug.log "addBRs, nodes" nodes
+    List.map nLtoBR nodes
 
 
 nLtoBR : Html.Parser.Node -> Html.Parser.Node
 nLtoBR node =
-    case Debug.log "nLtoBR" node of
+    case node of
         Text s ->
-            case Debug.log "String.split" <| String.split "\n" s of
+            case String.split "\n" s of
                 [] ->
                     node
 
