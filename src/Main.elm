@@ -398,6 +398,8 @@ addPs : List Html.Parser.Node -> List Html.Parser.Node
 addPs nodes =
     let
         loop : List Html.Parser.Node -> List Html.Parser.Node -> List Html.Parser.Node -> List Html.Parser.Node
+        -- prev is reversed.
+        -- para is the current paragraph.
         loop prev para list =
             case list of
                 [] ->
@@ -412,7 +414,7 @@ addPs nodes =
                                     List.append para <| List.reverse prev
 
                                 [ s ] ->
-                                    loop (List.concat [ prev, List.reverse para, [ Text s ] ])
+                                    loop (List.concat [ [ Text s ], List.reverse para, prev ])
                                         []
                                         rest
 
@@ -446,14 +448,16 @@ isText node =
 
 addBRs : List Html.Parser.Node -> List Html.Parser.Node
 addBRs nodes =
-    List.Extra.updateIf isText nLtoBR nodes
+    Debug.log "  " <|
+        List.map nLtoBR <|
+            Debug.log "addBRs, nodes" nodes
 
 
 nLtoBR : Html.Parser.Node -> Html.Parser.Node
 nLtoBR node =
-    case node of
+    case Debug.log "nLtoBR" node of
         Text s ->
-            case String.split "\n" s of
+            case Debug.log "String.split" <| String.split "\n" s of
                 [] ->
                     node
 
@@ -468,8 +472,11 @@ nLtoBR node =
                             |> List.intersperse brElement
                         )
 
-        _ ->
-            node
+        Element name attributes subnodes ->
+            Element name attributes <| List.map nLtoBR subnodes
+
+        comment ->
+            comment
 
 
 brElement : Html.Parser.Node
