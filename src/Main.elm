@@ -419,8 +419,8 @@ addPs nodes =
                                     Debug.todo "This can't happen."
 
                                 [ s ] ->
-                                    loop (List.append (List.reverse para) prev)
-                                        [ Text s ]
+                                    loop prev
+                                        (List.append para [ Text s ])
                                         rest
 
                                 s :: srest ->
@@ -438,7 +438,7 @@ addPs nodes =
                                         ((Element "p" [] <|
                                             List.concat [ para, [ Text s ] ]
                                          )
-                                            :: (prev ++ List.reverse paras)
+                                            :: (List.reverse paras ++ prev)
                                         )
                                         [ case maybeSlast of
                                             Nothing ->
@@ -463,7 +463,9 @@ addPs nodes =
                                 rest
 
                         Comment _ ->
-                            loop (node :: List.reverse para ++ prev) [] rest
+                            loop prev
+                                (List.concat [ para, [ node ] ])
+                                rest
     in
     loop [] [] nodes
 
