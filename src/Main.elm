@@ -412,16 +412,15 @@ addPs nodes =
                     List.append (List.reverse prev) para
 
                 node :: rest ->
-                    -- TODO: make this actually do something
                     case node of
                         Text string ->
                             case String.split "\n\n" string of
                                 [] ->
-                                    List.append (List.reverse prev) para
+                                    Debug.todo "This can't happen."
 
                                 [ s ] ->
-                                    loop (List.concat [ [ Text s ], List.reverse para, prev ])
-                                        []
+                                    loop (List.append (List.reverse para) prev)
+                                        [ Text s ]
                                         rest
 
                                 s :: srest ->
