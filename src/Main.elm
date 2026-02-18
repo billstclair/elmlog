@@ -85,6 +85,8 @@ init flags url key =
 And a broken line.
 
 New paragraph <i>italic</i> considered OK.
+
+<img src='images/elmlog-screenshot-260218.jpg' width='200'>
     """
 
         --     "<b>bold</b> <i>italic</i> <b><i>both</i></b>"
@@ -146,7 +148,7 @@ view model =
                     [ text "-- show editor --" ]
 
               else
-                span []
+                div []
                     [ a
                         [ href "#"
                         , onClick ToggleShowEditor
@@ -159,7 +161,10 @@ view model =
                                 [ src "images/GitHub-Mark-32px.png"
                                 ]
                                 []
+                            , text " GitHub"
                             ]
+                        , br
+                        , text "© Copyright 2026, Bill St. Clair"
                         ]
                     ]
             ]
@@ -341,14 +346,8 @@ toHtml string inputType =
             , Nothing
             )
 
-        FilteredHtmlInput ->
-            parseHtml string FilteredHtmlInput
-
-        FullHtmlInput ->
-            parseHtml string FullHtmlInput
-
-        RawHtmlInput ->
-            parseHtml string RawHtmlInput
+        _ ->
+            parseHtml string inputType
 
 
 {-| The <elmlog>...</elmlog> tag does nothing. It isn't even defined.
@@ -502,23 +501,22 @@ addBRs nodes =
 
 nLtoBR : Html.Parser.Node -> Html.Parser.Node
 nLtoBR node =
-    case Debug.log "nLtoBR" node of
+    case node of
         Text s ->
-            Debug.log "  " <|
-                case String.split "\n" s of
-                    [] ->
-                        node
+            case String.split "\n" s of
+                [] ->
+                    node
 
-                    [ _ ] ->
-                        node
+                [ _ ] ->
+                    node
 
-                    ss ->
-                        Element "span"
-                            []
-                        <|
-                            (List.map Text ss
-                                |> List.intersperse brElement
-                            )
+                ss ->
+                    Element "span"
+                        []
+                    <|
+                        (List.map Text ss
+                            |> List.intersperse brElement
+                        )
 
         Element name attributes subnodes ->
             Element name attributes <| List.map nLtoBR subnodes
