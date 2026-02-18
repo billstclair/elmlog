@@ -425,11 +425,28 @@ addPs nodes =
 
                                 s :: srest ->
                                     let
+                                        maybeSlast =
+                                            car (List.reverse srest)
+
+                                        sButlast =
+                                            List.reverse (cdr <| List.reverse srest)
+
                                         paras =
-                                            List.map (\ss -> Element "p" [] [ Text ss ]) srest
+                                            List.map (\ss -> Element "p" [] [ Text ss ]) sButlast
                                     in
-                                    loop (prev ++ List.reverse paras ++ [ Element "p" [] <| List.concat [ para, [ Text s ] ] ])
-                                        []
+                                    loop
+                                        ((Element "p" [] <|
+                                            List.concat [ para, [ Text s ] ]
+                                         )
+                                            :: (prev ++ List.reverse paras)
+                                        )
+                                        [ case maybeSlast of
+                                            Nothing ->
+                                                Comment "Can't happen"
+
+                                            Just slast ->
+                                                Text slast
+                                        ]
                                         rest
 
                         Element name attribs subnodes ->
@@ -449,6 +466,21 @@ addPs nodes =
                             loop (node :: List.reverse para ++ prev) [] rest
     in
     loop [] [] nodes
+
+
+car : List x -> Maybe x
+car cons =
+    List.head cons
+
+
+cdr : List x -> List x
+cdr cons =
+    case List.tail cons of
+        Nothing ->
+            []
+
+        Just tail ->
+            tail
 
 
 isText : Html.Parser.Node -> Bool
