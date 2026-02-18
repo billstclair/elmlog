@@ -80,8 +80,14 @@ init : Value -> Url -> Key -> ( Model, Cmd Msg )
 init flags url key =
     let
         userText =
-            "<b>bold</b> <i>italic</i> <b><i>both</i></b>"
+            """
+<b>bold</b> <i>italic</i> <b><i>both</i></b>
+And a broken line.
 
+New paragraph <i>italic</i> considered OK.
+    """
+
+        --     "<b>bold</b> <i>italic</i> <b><i>both</i></b>"
         -- defaultInputType = MarkdownInput
         -- "Hello, World.\n\n**bold text.** _Italic text._ **_both._**\n\n[billstclair.com](https://billstclair.com/)\n\n![Mastodon](https://mammudeck.com/images/icon-192.png)"
         ( preview, maybeDeadends ) =
@@ -463,22 +469,23 @@ addBRs nodes =
 
 nLtoBR : Html.Parser.Node -> Html.Parser.Node
 nLtoBR node =
-    case node of
+    case Debug.log "nLtoBR" node of
         Text s ->
-            case String.split "\n" s of
-                [] ->
-                    node
+            Debug.log "  " <|
+                case String.split "\n" s of
+                    [] ->
+                        node
 
-                [ _ ] ->
-                    node
+                    [ _ ] ->
+                        node
 
-                ss ->
-                    Element "span"
-                        []
-                    <|
-                        (List.map Text ss
-                            |> List.intersperse brElement
-                        )
+                    ss ->
+                        Element "span"
+                            []
+                        <|
+                            (List.map Text ss
+                                |> List.intersperse brElement
+                            )
 
         Element name attributes subnodes ->
             Element name attributes <| List.map nLtoBR subnodes
