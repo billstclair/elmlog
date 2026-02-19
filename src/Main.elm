@@ -530,10 +530,70 @@ brElement =
     Element "br" [] []
 
 
+allowedHtmlNames : List String
+allowedHtmlNames =
+    [ "a"
+    , "em"
+    , "strong"
+    , "cite"
+    , "code"
+    , "ul"
+    , "ol"
+    , "li"
+    , "dl"
+    , "dt"
+    , "dd"
+    , "i"
+    , "b"
+    , "u"
+    , "blockquote"
+    , "pre"
+    , "p"
+    , "br"
+    , "span"
+    ]
+
+
 filteredHtmlNodes : List Html.Parser.Node -> List Html.Parser.Node
 filteredHtmlNodes nodes =
-    -- TODO
-    nodes
+    List.map filterNode nodes
+
+
+printAttributes : List Html.Parser.Attribute -> String
+printAttributes attributes =
+    List.map printAttrib attributes
+        |> List.intersperse " "
+        |> String.concat
+
+
+printAttrib : Html.Parser.Attribute -> String
+printAttrib ( name, value ) =
+    " " ++ name ++ "=" ++ "'" ++ escapeSingleQuotes value ++ "'"
+
+
+escapeSingleQuotes : String -> String
+escapeSingleQuotes string =
+    String.replace "'" "\\'" string
+
+
+filterNode : Html.Parser.Node -> Html.Parser.Node
+filterNode node =
+    case node of
+        Element name attribs subnodes ->
+            if List.member name allowedHtmlNames then
+                Element name attribs <| filteredHtmlNodes subnodes
+
+            else
+                Element "span"
+                    []
+                    (Text ("<" ++ name ++ printAttributes attribs ++ ">")
+                        :: (filteredHtmlNodes subnodes
+                                ++ [ Text ("</" ++ name ++ ">") ]
+                           )
+                    )
+
+        _ ->
+            node
 
 
 nodesToString : List Html.Parser.Node -> String
