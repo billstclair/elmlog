@@ -164,7 +164,9 @@ view model =
                             , text " GitHub"
                             ]
                         , br
-                        , text "© Copyright 2026, Bill St. Clair"
+                        , a [ href "https://github.com/billstclair/elmlog/blob/main/LICENSE" ]
+                            [ text "© Copyright" ]
+                        , text " 2026, Bill St. Clair"
                         ]
                     ]
             ]
@@ -175,8 +177,7 @@ view model =
 editor : Model -> Html Msg
 editor model =
     span []
-        [ h4 "Content"
-        , p
+        [ p
             [ style "margin" "10px" ]
             [ textarea
                 [ style "width" "50em"
@@ -449,17 +450,28 @@ addPs nodes =
                                         rest
 
                         Element name attribs subnodes ->
-                            loop
-                                prev
-                                (List.append
-                                    para
-                                    [ Element name
-                                        attribs
-                                      <|
-                                        addPs subnodes
-                                    ]
-                                )
-                                rest
+                            if name == "p" then
+                                loop
+                                    (List.concat
+                                        [ [ node, Element "p" [] para ]
+                                        , prev
+                                        ]
+                                    )
+                                    []
+                                    rest
+
+                            else
+                                loop
+                                    prev
+                                    (List.append
+                                        para
+                                        [ Element name
+                                            attribs
+                                          <|
+                                            addPs subnodes
+                                        ]
+                                    )
+                                    rest
 
                         Comment _ ->
                             loop prev
