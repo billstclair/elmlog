@@ -36,7 +36,7 @@ import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, require
 import Json.Encode as JE exposing (Value)
 import List.Extra
 import Markdown
-import Parser exposing (DeadEnd)
+import Parser exposing ((|.), DeadEnd, Parser)
 import Url exposing (Url)
 
 
@@ -412,6 +412,14 @@ emailOrWebsiteToLinks node =
                             Text ss ->
                                 websiteToLinks ss
 
+                            Element name attribs subnodes ->
+                                [ Element name
+                                    attribs
+                                    (List.map emailOrWebsiteToLinks subnodes
+                                        |> List.concat
+                                    )
+                                ]
+
                             _ ->
                                 [ n ]
                     )
@@ -419,6 +427,31 @@ emailOrWebsiteToLinks node =
 
         _ ->
             [ node ]
+
+
+emailParser : Parser Html.Parser.Node
+emailParser =
+    Parser.getChompedString
+        (Parser.succeed ()
+            |. Parser.chompIf (\c -> Char.isAlphaNum c)
+            |. Parser.chompIf (\c -> c == '@')
+            |. Parser.chompIf (\c -> Char.isAlphaNum c)
+            |. Parser.chompIf (\c -> c == '.')
+            |. Parser.chompIf (\c -> Char.isAlphaNum c)
+        )
+        |> Parser.andThen
+            (\email ->
+                Parser.succeed
+                    (Element "a"
+                        [ ( "href", "mailto:" ++ email ) ]
+                        [ Text email ]
+                    )
+            )
+
+
+parseEmail : String -> Result (List Parser.DeadEnd) Html.Parser.Node
+parseEmail string =
+    Parser.run emailParser string
 
 
 emailToLinks : String -> List Html.Parser.Node
