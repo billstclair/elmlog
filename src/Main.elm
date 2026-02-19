@@ -378,9 +378,11 @@ parseHtml string inputType =
                         FilteredHtmlInput ->
                             addPsAndBRs nodes
                                 |> filteredHtmlNodes
+                                |> emailAndWebsitesToLinks
 
                         FullHtmlInput ->
                             addPsAndBRs nodes
+                                |> emailAndWebsitesToLinks
 
                         RawHtmlInput ->
                             nodes
@@ -392,6 +394,41 @@ parseHtml string inputType =
                 toVirtualDom filteredNodes
             , Nothing
             )
+
+
+emailAndWebsitesToLinks : List Html.Parser.Node -> List Html.Parser.Node
+emailAndWebsitesToLinks nodes =
+    List.concat <| List.map emailOrWebsiteToLinks nodes
+
+
+emailOrWebsiteToLinks : Html.Parser.Node -> List Html.Parser.Node
+emailOrWebsiteToLinks node =
+    case node of
+        Text s ->
+            emailToLinks s
+                |> List.map
+                    (\n ->
+                        case n of
+                            Text ss ->
+                                websiteToLinks ss
+
+                            _ ->
+                                [ n ]
+                    )
+                |> List.concat
+
+        _ ->
+            [ node ]
+
+
+emailToLinks : String -> List Html.Parser.Node
+emailToLinks string =
+    [ Text string ]
+
+
+websiteToLinks : String -> List Html.Parser.Node
+websiteToLinks string =
+    [ Text string ]
 
 
 addPsAndBRs : List Html.Parser.Node -> List Html.Parser.Node
