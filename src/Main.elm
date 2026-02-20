@@ -429,6 +429,13 @@ emailOrWebsiteToLinks node =
             [ node ]
 
 
+isWhitespaceChar : Char -> Bool
+isWhitespaceChar char =
+    (char == '\n')
+        || (char == ' ')
+        || (char == '\t')
+
+
 emailParser : Parser Html.Parser.Node
 emailParser =
     Parser.getChompedString
