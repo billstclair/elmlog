@@ -429,6 +429,15 @@ emailOrWebsiteToLinks node =
             [ node ]
 
 
+isEmailNameChar : Char -> Bool
+isEmailNameChar char =
+    (not <| isWhitespaceChar char)
+        && (Char.isAlphaNum char
+                || (char == '-')
+                || (char == '_')
+           )
+
+
 isWhitespaceChar : Char -> Bool
 isWhitespaceChar char =
     (char == '\n')
@@ -436,15 +445,26 @@ isWhitespaceChar char =
         || (char == '\t')
 
 
+isDomainChar : Char -> Bool
+isDomainChar char =
+    (not <| isWhitespaceChar char)
+        && isEmailNameChar char
+
+
+isTLDChar : Char -> Bool
+isTLDChar char =
+    Char.isAlphaNum char
+
+
 emailParser : Parser Html.Parser.Node
 emailParser =
     Parser.getChompedString
         (Parser.succeed ()
-            |. Parser.chompIf (\c -> Char.isAlphaNum c)
+            |. Parser.chompIf (\c -> isEmailNameChar c)
             |. Parser.chompIf (\c -> c == '@')
-            |. Parser.chompIf (\c -> Char.isAlphaNum c)
+            |. Parser.chompIf (\c -> isDomainChar c)
             |. Parser.chompIf (\c -> c == '.')
-            |. Parser.chompIf (\c -> Char.isAlphaNum c)
+            |. Parser.chompIf (\c -> isTLDChar c)
         )
         |> Parser.andThen
             (\email ->
