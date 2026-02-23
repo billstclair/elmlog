@@ -36,7 +36,7 @@ import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, require
 import Json.Encode as JE exposing (Value)
 import List.Extra
 import Markdown
-import Parser exposing ((|.), DeadEnd, Parser)
+import Parser exposing ((|.), (|=), DeadEnd, Parser)
 import Url exposing (Url)
 
 
@@ -456,6 +456,20 @@ isTLDChar char =
     Char.isAlphaNum char
 
 
+
+{- Not yet
+   emailsParser : Parser (List Html.Parser.Node)
+   emailsParser =
+   Parser.oneOf
+     [ Parser.end
+     , Parser.succeed ()
+       |. Parser.spaces
+       |= emailParser
+       |= Parser.lazy (_ -> emailsParser)
+     ]
+-}
+
+
 emailParser : Parser Html.Parser.Node
 emailParser =
     Parser.getChompedString
@@ -469,7 +483,8 @@ emailParser =
         |> Parser.andThen
             (\email ->
                 Parser.succeed
-                    (Element "a"
+                    (Element
+                        "a"
                         [ ( "href", "mailto:" ++ email ) ]
                         [ Text email ]
                     )
