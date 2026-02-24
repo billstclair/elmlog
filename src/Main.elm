@@ -432,10 +432,7 @@ emailOrWebsiteToLinks node =
 isEmailNameChar : Char -> Bool
 isEmailNameChar char =
     (not <| isWhitespaceChar char)
-        && (Char.isAlphaNum char
-                || (char == '-')
-                || (char == '_')
-           )
+        && (char /= '@')
 
 
 isWhitespaceChar : Char -> Bool
@@ -448,12 +445,12 @@ isWhitespaceChar char =
 isDomainChar : Char -> Bool
 isDomainChar char =
     (not <| isWhitespaceChar char)
-        && isEmailNameChar char
+        && (char /= '.')
 
 
 isTLDChar : Char -> Bool
 isTLDChar char =
-    Char.isAlphaNum char
+    not <| isWhitespaceChar char
 
 
 
