@@ -25,12 +25,13 @@ import Browser.Dom as Dom exposing (Viewport)
 import Browser.Events as Events
 import Browser.Navigation as Navigation exposing (Key)
 import Cmd.Extra exposing (addCmd, withCmd, withCmds, withNoCmd)
+import Elmlog.Parsers exposing (emailParser)
 import Elmlog.Types exposing (InputType(..))
 import Html exposing (Html, a, div, fieldset, img, input, legend, p, span, text, textarea, ul)
 import Html.Attributes exposing (checked, disabled, href, name, src, style, type_, value, width)
 import Html.Events exposing (onCheck, onClick, onInput)
-import Html.Parser exposing (Node(..), run)
-import Html.Parser.Util exposing (toVirtualDom)
+import Html.Parser exposing (Node(..))
+import Html.Parser.Util
 import Json.Decode as JD exposing (Decoder)
 import Json.Decode.Pipeline as DP exposing (custom, hardcoded, optional, required)
 import Json.Encode as JE exposing (Value)
@@ -391,7 +392,7 @@ parseHtml string inputType =
                             nodes
             in
             ( span [] <|
-                toVirtualDom filteredNodes
+                Html.Parser.Util.toVirtualDom filteredNodes
             , Nothing
             )
 
