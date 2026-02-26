@@ -1,4 +1,4 @@
-module Elmlog.Parsers exposing (emailParser)
+module Elmlog.Parsers exposing (emailParser, isDomainChar, isEmailNameChar, isTLDChar, isWhitespaceChar)
 
 {-| Parsers.elm
 
@@ -11,26 +11,32 @@ import Parser exposing ((|.), (|=), Parser)
 
 isEmailNameChar : Char -> Bool
 isEmailNameChar char =
-    (not <| isWhitespaceChar char)
-        && (char /= '@')
+    Debug.log "  " <|
+        (not <| isWhitespaceChar <| Debug.log "isEmailNameChar" char)
+            && (char /= '@')
 
 
 isWhitespaceChar : Char -> Bool
 isWhitespaceChar char =
-    (char == '\n')
-        || (char == ' ')
-        || (char == '\t')
+    Debug.log "  " <|
+        (Debug.log "isWhiteSpaceChar" char == '\n')
+            || (char == ' ')
+            || (char == '\t')
 
 
 isDomainChar : Char -> Bool
 isDomainChar char =
-    (not <| isWhitespaceChar char)
-        && (char /= '.')
+    Debug.log "  " <|
+        (not <| isWhitespaceChar <| Debug.log "isDomainChar" char)
+            && (char /= '.')
 
 
 isTLDChar : Char -> Bool
 isTLDChar char =
-    not <| isWhitespaceChar char
+    Debug.log "  " <|
+        not <|
+            isWhitespaceChar <|
+                Debug.log "isTDLChar" char
 
 
 {-| emailParser
