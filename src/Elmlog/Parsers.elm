@@ -1,4 +1,12 @@
-module Elmlog.Parsers exposing (emailParser, isDomainChar, isEmailNameChar, isTLDChar, isWhitespaceChar)
+module Elmlog.Parsers exposing
+    ( emailParser
+    , httpPrefixParser
+    , isDomainChar
+    , isEmailNameChar
+    , isTLDChar
+    , isWhitespaceChar
+    , linkParser
+    )
 
 {-| Parsers.elm
 
@@ -82,3 +90,31 @@ emailParser =
         |= domainChars
         |. Parser.symbol "."
         |= tldChars
+
+
+type HTTP
+    = Http
+    | Https
+
+
+httpPrefixParser : Parser (Maybe HTTP)
+httpPrefixParser =
+    -- TODO
+    Parser.succeed Nothing
+
+
+type alias Link =
+    { connection : Maybe HTTP
+    , name : String
+    , tld : String
+    }
+
+
+linkParser : Parser Link
+linkParser =
+    -- TODO
+    Parser.succeed
+        { connection = Nothing
+        , name = "sample"
+        , tld = "com"
+        }
