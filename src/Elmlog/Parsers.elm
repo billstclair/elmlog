@@ -16,6 +16,12 @@ isEmailNameChar char =
             && (char /= '@')
 
 
+emailNameChars : Parser String
+emailNameChars =
+    Parser.chompWhile isEmailNameChar
+        |> Parser.getChompedString
+
+
 isWhitespaceChar : Char -> Bool
 isWhitespaceChar char =
     Debug.log "  " <|
@@ -24,11 +30,23 @@ isWhitespaceChar char =
             || (char == '\t')
 
 
+whitespaceChars : Parser String
+whitespaceChars =
+    Parser.chompWhile isWhitespaceChar
+        |> Parser.getChompedString
+
+
 isDomainChar : Char -> Bool
 isDomainChar char =
     Debug.log "  " <|
         (not <| isWhitespaceChar <| Debug.log "isDomainChar" char)
             && (char /= '.')
+
+
+domainChars : Parser String
+domainChars =
+    Parser.chompWhile isDomainChar
+        |> Parser.getChompedString
 
 
 isTLDChar : Char -> Bool
@@ -39,24 +57,28 @@ isTLDChar char =
                 Debug.log "isTDLChar" char
 
 
+tldChars : Parser String
+tldChars =
+    Parser.chompWhile isTLDChar
+        |> Parser.getChompedString
+
+
+type alias Email =
+    { name : String
+    , domain : String
+    , tld : String
+    }
+
+
 {-| emailParser
 Parses an email address, preceded by whatever.
 The second value in the returned pair is the email address.
 -}
-emailParser : Parser ( String, String )
+emailParser : Parser Email
 emailParser =
-    let
-        justEmail : Parser String
-        justEmail =
-            Parser.getChompedString
-                (Parser.succeed ()
-                    |. Parser.chompIf (\c -> isEmailNameChar c)
-                    |. Parser.chompIf (\c -> c == '@')
-                    |. Parser.chompIf (\c -> isDomainChar c)
-                    |. Parser.chompIf (\c -> c == '.')
-                    |. Parser.chompIf (\c -> isTLDChar c)
-                )
-    in
-    justEmail
-        |> Parser.andThen
-            (\x -> Parser.succeed ( "", x ))
+    Parser.succeed Email
+        |= emailNameChars
+        |. Parser.symbol "@"
+        |= domainChars
+        |. Parser.symbol "."
+        |= tldChars
