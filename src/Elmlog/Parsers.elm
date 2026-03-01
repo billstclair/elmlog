@@ -99,8 +99,22 @@ type HTTP
 
 httpPrefixParser : Parser (Maybe HTTP)
 httpPrefixParser =
-    -- TODO
-    Parser.succeed Nothing
+    Parser.oneOf
+        [ Parser.symbol "http"
+            |> Parser.andThen
+                (\_ ->
+                    Parser.oneOf
+                        [ Parser.symbol "s://"
+                            |> Parser.andThen
+                                (\_ -> Parser.succeed <| Just Https)
+                        , Parser.symbol "://"
+                            |> Parser.andThen
+                                (\_ -> Parser.succeed <| Just Http)
+                        , Parser.succeed Nothing
+                        ]
+                )
+        , Parser.succeed Nothing
+        ]
 
 
 type alias Link =
