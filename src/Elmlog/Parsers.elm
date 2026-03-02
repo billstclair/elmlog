@@ -109,6 +109,22 @@ emailParser =
         |= tldChars
 
 
+emailNodeParser : Parser Node
+emailNodeParser =
+    emailParser
+        |> Parser.andThen
+            (\email ->
+                let
+                    emailString =
+                        email.name ++ "@" ++ email.domain ++ "." ++ email.tld
+                in
+                Element "a"
+                    [ ( "href", "mailto:" ++ emailString ) ]
+                    [ Text emailString ]
+                    |> Parser.succeed
+            )
+
+
 type HTTP
     = Http
     | Https
@@ -189,6 +205,42 @@ linkParser =
             ]
 
 
+linkNodeParser : Parser Node
+linkNodeParser =
+    linkParser
+        |> Parser.andThen
+            (\link ->
+                let
+                    linkString =
+                        (case link.connection of
+                            Nothing ->
+                                ""
+
+                            Just http ->
+                                case http of
+                                    Http ->
+                                        "http://"
+
+                                    Https ->
+                                        "https://"
+                        )
+                            ++ link.name
+                            ++ "."
+                            ++ link.tld
+                            ++ (if link.path == "" then
+                                    ""
+
+                                else
+                                    "/" ++ link.path
+                               )
+                in
+                Parser.succeed <|
+                    Element "a"
+                        [ ( "href", linkString ) ]
+                        [ Text linkString ]
+            )
+
+
 mapResults : (Node -> Result err Node) -> List Node -> Result err (List Node)
 mapResults mapper nodes =
     let
@@ -255,3 +307,34 @@ mapNodes string mapper =
                                         Ok <| Element name attributes mappedNodes
             in
             mapResults eachNode nodes
+
+
+extractParsed : String -> Parser Node -> (String -> ( String, String )) -> Result (List DeadEnd) (List Node)
+extractParsed string parser scanToSeparator =
+    let
+        extractInternal : String -> String -> Result (List DeadEnd) (List Node)
+        extractInternal prefix suffix =
+            case Parser.run parser suffix of
+                Err deadends ->
+                    if suffix == "" then
+                        Err deadends
+
+                    else
+                        let
+                            ( head, tail ) =
+                                scanToSeparator suffix
+                        in
+                        if tail == "" then
+                            Err deadends
+
+                        else
+                            extractInternal (prefix ++ head) tail
+
+                Ok node ->
+                    if prefix == "" then
+                        Ok [ node ]
+
+                    else
+                        Ok [ Text prefix, node ]
+    in
+    extractInternal "" string
