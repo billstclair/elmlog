@@ -3,6 +3,7 @@ module Elmlog.Parsers exposing
     , httpPrefixParser
     , isDomainChar
     , isEmailNameChar
+    , isPathChar
     , isTLDChar
     , isWhitespaceChar
     , linkParser
@@ -60,14 +61,27 @@ domainChars =
 isTLDChar : Char -> Bool
 isTLDChar char =
     Debug.log "  " <|
-        not <|
-            isWhitespaceChar <|
-                Debug.log "isTDLChar" char
+        (char /= '/')
+            && not
+                (isWhitespaceChar <|
+                    Debug.log "isTDLChar" char
+                )
 
 
 tldChars : Parser String
 tldChars =
     Parser.chompWhile isTLDChar
+        |> Parser.getChompedString
+
+
+isPathChar : Char -> Bool
+isPathChar char =
+    not <| isWhitespaceChar char
+
+
+pathChars : Parser String
+pathChars =
+    Parser.chompWhile isPathChar
         |> Parser.getChompedString
 
 
@@ -117,18 +131,27 @@ httpPrefixParser =
         ]
 
 
+{-| [http(s)://]name.tld/path
+-}
 type alias Link =
     { connection : Maybe HTTP
     , name : String
     , tld : String
+    , path : String
     }
 
 
 linkParser : Parser Link
 linkParser =
-    -- TODO
-    Parser.succeed
-        { connection = Nothing
-        , name = "sample"
-        , tld = "com"
-        }
+    Parser.succeed Link
+        |= httpPrefixParser
+        |. Parser.spaces
+        |= domainChars
+        |. Parser.symbol "."
+        |= tldChars
+        |= Parser.oneOf
+            [ Parser.symbol "/"
+                |> Parser.andThen
+                    (\_ -> pathChars)
+            , Parser.succeed ""
+            ]
