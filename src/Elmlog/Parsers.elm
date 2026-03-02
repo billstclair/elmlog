@@ -15,7 +15,10 @@ Various Parser use.
 
 -}
 
-import Parser exposing ((|.), (|=), Parser)
+import Html exposing (Html, a, text)
+import Html.Attributes exposing (href)
+import Html.Parser exposing (Node(..))
+import Parser exposing ((|.), (|=), DeadEnd, Parser)
 
 
 isEmailNameChar : Char -> Bool
@@ -141,6 +144,35 @@ type alias Link =
     }
 
 
+linkToHtml : Link -> Html msg
+linkToHtml { connection, name, tld, path } =
+    let
+        string =
+            (case connection of
+                Nothing ->
+                    ""
+
+                Just http ->
+                    if http == Http then
+                        "http://"
+
+                    else
+                        "https://"
+            )
+                ++ name
+                ++ "."
+                ++ tld
+                ++ (if path == "" then
+                        ""
+
+                    else
+                        "/" ++ path
+                   )
+    in
+    a [ href string ]
+        [ text string ]
+
+
 linkParser : Parser Link
 linkParser =
     Parser.succeed Link
@@ -155,3 +187,71 @@ linkParser =
                     (\_ -> pathChars)
             , Parser.succeed ""
             ]
+
+
+mapResults : (Node -> Result (List DeadEnd) Node) -> List Node -> Result (List DeadEnd) (List Node)
+mapResults mapper nodes =
+    let
+        mapit : List Node -> List Node -> Result (List DeadEnd) (List Node)
+        mapit result otherNodes =
+            case otherNodes of
+                [] ->
+                    Ok <| List.reverse result
+
+                node :: rest ->
+                    case mapper node of
+                        Err deadends ->
+                            Err deadends
+
+                        Ok mapped ->
+                            mapit (mapped :: result) rest
+    in
+    mapit [] nodes
+
+
+mapNodes : String -> (String -> Result (List DeadEnd) (List Node)) -> Result (List DeadEnd) (List Node)
+mapNodes string mapper =
+    case Html.Parser.run string of
+        Err deadends ->
+            Err deadends
+
+        Ok nodes ->
+            let
+                eachNode : Node -> Result (List DeadEnd) Node
+                eachNode node =
+                    case node of
+                        Comment _ ->
+                            Ok node
+
+                        Text text ->
+                            -- TODO
+                            case mapper text of
+                                Err deadEnds ->
+                                    Err deadEnds
+
+                                Ok mappedNodes ->
+                                    Ok
+                                        (case mappedNodes of
+                                            [] ->
+                                                Text ""
+
+                                            [ n ] ->
+                                                n
+
+                                            _ ->
+                                                Element "span" [] mappedNodes
+                                        )
+
+                        Element name attributes subnodes ->
+                            if name == "a" then
+                                Ok node
+
+                            else
+                                case mapResults eachNode subnodes of
+                                    Err deadends ->
+                                        Err deadends
+
+                                    Ok mappedNodes ->
+                                        Ok <| Element name attributes mappedNodes
+            in
+            mapResults eachNode nodes
