@@ -189,10 +189,10 @@ linkParser =
             ]
 
 
-mapResults : (Node -> Result (List DeadEnd) Node) -> List Node -> Result (List DeadEnd) (List Node)
+mapResults : (Node -> Result err Node) -> List Node -> Result err (List Node)
 mapResults mapper nodes =
     let
-        mapit : List Node -> List Node -> Result (List DeadEnd) (List Node)
+        mapit : List Node -> List Node -> Result err (List Node)
         mapit result otherNodes =
             case otherNodes of
                 [] ->
@@ -200,8 +200,8 @@ mapResults mapper nodes =
 
                 node :: rest ->
                     case mapper node of
-                        Err deadends ->
-                            Err deadends
+                        Err err ->
+                            Err err
 
                         Ok mapped ->
                             mapit (mapped :: result) rest
@@ -226,8 +226,8 @@ mapNodes string mapper =
                         Text text ->
                             -- TODO
                             case mapper text of
-                                Err deadEnds ->
-                                    Err deadEnds
+                                Err deadends ->
+                                    Err deadends
 
                                 Ok mappedNodes ->
                                     Ok
