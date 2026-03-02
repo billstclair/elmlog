@@ -1,11 +1,13 @@
 module Elmlog.Parsers exposing
-    ( emailParser
+    ( emailNodeParser
+    , emailParser
     , httpPrefixParser
     , isDomainChar
     , isEmailNameChar
     , isPathChar
     , isTLDChar
     , isWhitespaceChar
+    , linkNodeParser
     , linkParser
     )
 
