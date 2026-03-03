@@ -55,6 +55,7 @@ isDomainChar char =
     Debug.log "  " <|
         (not <| isWhitespaceChar <| Debug.log "isDomainChar" char)
             && (char /= '.')
+            && (char /= '/')
 
 
 domainChars : Parser String
@@ -135,19 +136,12 @@ type HTTP
 httpPrefixParser : Parser (Maybe HTTP)
 httpPrefixParser =
     Parser.oneOf
-        [ Parser.symbol "http"
+        [ Parser.symbol "https://"
             |> Parser.andThen
-                (\_ ->
-                    Parser.oneOf
-                        [ Parser.symbol "s://"
-                            |> Parser.andThen
-                                (\_ -> Parser.succeed <| Just Https)
-                        , Parser.symbol "://"
-                            |> Parser.andThen
-                                (\_ -> Parser.succeed <| Just Http)
-                        , Parser.succeed Nothing
-                        ]
-                )
+                (\_ -> Parser.succeed <| Just Https)
+        , Parser.symbol "http://"
+            |> Parser.andThen
+                (\_ -> Parser.succeed <| Just Http)
         , Parser.succeed Nothing
         ]
 
@@ -160,35 +154,6 @@ type alias Link =
     , tld : String
     , path : String
     }
-
-
-linkToHtml : Link -> Html msg
-linkToHtml { connection, name, tld, path } =
-    let
-        string =
-            (case connection of
-                Nothing ->
-                    ""
-
-                Just http ->
-                    if http == Http then
-                        "http://"
-
-                    else
-                        "https://"
-            )
-                ++ name
-                ++ "."
-                ++ tld
-                ++ (if path == "" then
-                        ""
-
-                    else
-                        "/" ++ path
-                   )
-    in
-    a [ href string ]
-        [ text string ]
 
 
 linkParser : Parser Link
