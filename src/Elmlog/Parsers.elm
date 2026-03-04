@@ -25,9 +25,8 @@ import Parser exposing ((|.), (|=), DeadEnd, Parser)
 
 isEmailNameChar : Char -> Bool
 isEmailNameChar char =
-    Debug.log "  " <|
-        (not <| isWhitespaceChar <| Debug.log "isEmailNameChar" char)
-            && (char /= '@')
+    (not <| isWhitespaceChar char)
+        && (char /= '@')
 
 
 emailNameChars : Parser String
@@ -38,10 +37,9 @@ emailNameChars =
 
 isWhitespaceChar : Char -> Bool
 isWhitespaceChar char =
-    Debug.log "  " <|
-        (Debug.log "isWhiteSpaceChar" char == '\n')
-            || (char == ' ')
-            || (char == '\t')
+    (char == '\n')
+        || (char == ' ')
+        || (char == '\t')
 
 
 whitespaceChars : Parser String
@@ -52,10 +50,9 @@ whitespaceChars =
 
 isDomainChar : Char -> Bool
 isDomainChar char =
-    Debug.log "  " <|
-        (not <| isWhitespaceChar <| Debug.log "isDomainChar" char)
-            && (char /= '.')
-            && (char /= '/')
+    (not <| isWhitespaceChar char)
+        && (char /= '.')
+        && (char /= '/')
 
 
 domainChars : Parser String
@@ -66,12 +63,9 @@ domainChars =
 
 isTLDChar : Char -> Bool
 isTLDChar char =
-    Debug.log "  " <|
-        (char /= '/')
-            && not
-                (isWhitespaceChar <|
-                    Debug.log "isTDLChar" char
-                )
+    (char /= '/')
+        && not
+            (isWhitespaceChar char)
 
 
 tldChars : Parser String
