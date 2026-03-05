@@ -299,3 +299,57 @@ extractParsed string parser scanToSeparator =
                         Ok [ Text prefix, node ]
     in
     extractInternal "" string
+
+
+scanTo : String -> (String -> Bool) -> Int -> ( String, String )
+scanTo string predicate index =
+    let
+        len =
+            String.length string
+
+        scanInternal idx =
+            if idx >= len then
+                ( string, "" )
+
+            else
+                let
+                    ( head, tail ) =
+                        ( String.left idx string, String.dropLeft idx string )
+                in
+                if predicate <| String.left 1 tail then
+                    ( head, tail )
+
+                else
+                    scanInternal <| index + 1
+    in
+    scanInternal index
+
+
+scanToEmailSeparator : String -> ( String, String )
+scanToEmailSeparator string =
+    let
+        predicate : String -> Bool
+        predicate s =
+            case String.uncons s of
+                Nothing ->
+                    False
+
+                Just ( c, _ ) ->
+                    not <| isWhitespaceChar c
+    in
+    scanTo string predicate 1
+
+
+scanToHtmlSeparator : String -> ( String, String )
+scanToHtmlSeparator string =
+    let
+        predicate : String -> Bool
+        predicate s =
+            case String.uncons s of
+                Nothing ->
+                    False
+
+                Just ( c, _ ) ->
+                    not <| isWhitespaceChar c
+    in
+    scanTo string predicate 1
