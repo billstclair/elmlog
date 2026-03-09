@@ -20,7 +20,7 @@ Various Parser use.
 import Html exposing (Html, a, text)
 import Html.Attributes exposing (href)
 import Html.Parser exposing (Node(..))
-import Parser exposing ((|.), (|=), DeadEnd, Parser)
+import Parser exposing ((|.), (|=), DeadEnd, Parser, Problem(..))
 
 
 isEmailNameChar : Char -> Bool
@@ -323,6 +323,31 @@ scanTo string predicate index =
                     scanInternal <| index + 1
     in
     scanInternal index
+
+
+parseOne : Parser n -> String -> (String -> ( String, String )) -> ( String, Node, String )
+parseOne parser input scanner =
+    case runFront parser input of
+        Err deadends ->
+            ( "", Text input, "" )
+
+        Ok ( node, suffix ) ->
+            ( "", node, suffix )
+
+
+runFront : Parser n -> String -> Result Parser.DeadEnd ( Node, String )
+runFront parser string =
+    Err
+        { row = 1
+        , col = 1
+        , problem = Problem "TODO"
+        }
+
+
+parseAll : String -> Parser n -> List Node
+parseAll string parser =
+    -- TODO
+    []
 
 
 scanToEmailSeparator : String -> ( String, String )
