@@ -237,7 +237,6 @@ mapNodes string mapper =
                             Ok node
 
                         Text text ->
-                            -- TODO
                             case mapper text of
                                 Err deadends ->
                                     Err deadends
