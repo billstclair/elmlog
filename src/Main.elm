@@ -399,7 +399,8 @@ parseHtml string inputType =
 
 emailAndWebsitesToLinks : List Html.Parser.Node -> List Html.Parser.Node
 emailAndWebsitesToLinks nodes =
-    List.concat <| List.map emailOrWebsiteToLinks nodes
+    List.map emailOrWebsiteToLinks nodes
+        |> List.concat
 
 
 emailOrWebsiteToLinks : Html.Parser.Node -> List Html.Parser.Node
@@ -442,7 +443,6 @@ websiteToLinks string =
 
 addPsAndBRs : List Html.Parser.Node -> List Html.Parser.Node
 addPsAndBRs nodes =
-    -- TODO
     addBRs <| addPs nodes
 
 
