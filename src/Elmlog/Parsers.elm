@@ -202,10 +202,10 @@ linkNodeParser =
             )
 
 
-mapResults : (Node -> Result err Node) -> List Node -> Result err (List Node)
+mapResults : (node -> Result err node) -> List node -> Result err (List node)
 mapResults mapper nodes =
     let
-        mapit : List Node -> List Node -> Result err (List Node)
+        mapit : List node -> List node -> Result err (List node)
         mapit result otherNodes =
             case otherNodes of
                 [] ->
