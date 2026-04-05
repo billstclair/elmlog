@@ -1,7 +1,7 @@
 ---------------------------------------------------------------
 --
 -- Main.elm
--- Weblog, a website to help maintain a weblog.
+-- Elmlog, a website to help maintain a weblog.
 -- Copyright (c) 2026 Bill St. Clair <billstclair@gmail.com>
 -- Some rights reserved.
 -- Distributed under the MIT License
@@ -377,12 +377,14 @@ parseHtml string inputType =
                 filteredNodes =
                     case inputType of
                         FilteredHtmlInput ->
-                            addPsAndBRs nodes
+                            nodes
+                                |> addPsAndBRs
                                 |> filteredHtmlNodes
                                 |> emailAndWebsitesToLinks
 
                         FullHtmlInput ->
-                            addPsAndBRs nodes
+                            nodes
+                                |> addPsAndBRs
                                 |> emailAndWebsitesToLinks
 
                         RawHtmlInput ->
