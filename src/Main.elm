@@ -14,9 +14,12 @@ module Main exposing (main)
 
 {-| Weblog.org top-level
 
-Weblog is a template wrapper that helps in creating a weblog.
+Elmlog is a template wrapper that helps in creating a weblog.
 A weblog is a frequently updated web site, usually organized by date.
 It is the precursor to today's social media, without the barriers.
+
+Patterned after Lisplog, but written in Elm, not lisp, and does most
+of the computation in the client browser. See lisplog.org.
 
 -}
 
